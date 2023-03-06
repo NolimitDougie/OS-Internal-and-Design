@@ -370,9 +370,10 @@ void *cmdline(char *buf)
     setArgsGiven(buf, arg, types, nArgsMax);
     int k = findCmd(buf, types);
     if (k >= 0)
-    invokeCmd(k, arg);
-    else{
-    usage();
+      invokeCmd(k, arg);
+    else
+    {
+      usage();
     }
   }
   return 0;
@@ -382,8 +383,8 @@ void *cmdline(char *buf)
 void *cmBg(void *cmdline)
 {
   char *buf = (char *)cmdline;
- // if (buf[0] == 0) {
- // }
+  // if (buf[0] == 0) {
+  // }
   if (buf[0] == '!') // begins with !, execute it as
     system(buf + 1); // a normal shell cmd
   else
@@ -396,7 +397,7 @@ void *cmBg(void *cmdline)
     else
       invokeCmd(k, arg);
   }
-  return(0);
+  return (0);
 }
 
 void *systemBG(void *cmd)
@@ -427,6 +428,9 @@ int main()
   char buf[1024]; // better not type longer than 1023 chars
   char *c;
   char *redir;
+  char *token1;
+  char *token2;
+  char *token3;
   int bg, fd, out, tmp;
 
   usage();
@@ -454,7 +458,7 @@ int main()
     c = strchr(buf, '>');
     if (c)
     {
-      redir = seperateSpaces(c + 1);              // sets redir to the next charcter
+      redir = seperateSpaces(c + 1);        // sets redir to the next charcter
       *c = '\0';                            // sets the pointer to null
       fd = creat(redir, S_IRUSR | S_IWUSR); // Creates a file with permissions
       out = dup(1);
@@ -466,95 +470,108 @@ int main()
     c = strchr(buf, '|');
     if (c)
     {
+      int numPipes = 0;
+      int i = 0;
+      while (buf[i] != '\0')
+      {
+        if(buf[i] == '|') numPipes++;
+i++;
+      }
 
-
-      int pid, filedes[2];
+      printf("%d\n\n", numPipes);
+      int pid, filedes[4];
       pipe(filedes);
       *c = '\0';
       c++;
       pid = fork();
-
-      /*
-      while((c = strchr(&buf, '|')) != NULL) {
-
-
-        if(pipe(fileDes) < 0){
-          perror("error");
-          exit(0);
+      token1 = strtok(buf, "|");
+      token2 = strtok(NULL, "|");
+      if (numPipes == 1)
+      {
+        if (pid < 0)
+        {
+          printf("Error\n");
         }
-       
-       pipe = fork();
-
-       if (pid < 0)
-      {
-        printf("Error\n");
-      }
-    
-    else if (pid == 0)
-      {
-       if(dup2(tmp, 0) < 0) {
-        perror("error2")
-       }
-
-       if(c != NULL && dup2(filedes[1], 1)) {
+        if (pid == 0)
+        {
+          close(filedes[1]);
+          tmp = dup(0); // Restores the STDIN file descriptor
           dup2(filedes[0], 0);
-          
-       } // end of if statment
-      
-         cmdline(seperateSpaces(c))
-         close(filesdes[0]);
-
-        } 
-        
-        
-        else {
-
-        //Parent Prcoess 
-        close(filedes[1]);
-        tmp = filedes[0];
-        wait(NULL);
-
-
-
-
+          cmdline(seperateSpaces(c));
+          close(filedes[0]);
+          close(0);
+          dup2(tmp, 0);
+          close(tmp);
+          raise(SIGTERM);
         }
-        
+        else
+        {
+          close(filedes[0]);
+          tmp = dup(1); // Restores the STDOUT file descriptor
+          dup2(filedes[1], 1);
+          cmdline(buf);
+          close(filedes[1]);
+          close(1);
+          dup2(tmp, 1);
+          close(tmp);
+          wait(NULL);
+        }
 
-        
-      } // End of while loop 
-      
-      
-      
-      */
-      if (pid < 0)
+      } // end of one pipe
+      else if (numPipes == 2)
       {
-        printf("Error\n");
-      }
-      else if (pid == 0)
-      {
-        // Child
-        close(filedes[1]);
-        tmp = dup(0); // Restores the STDIN file descriptor
-        dup2(filedes[0], 0);
-        cmdline(seperateSpaces(c));
-        close(filedes[0]);
-        close(0);
-        dup2(tmp, 0);
-        close(tmp);
-        raise(SIGTERM);
-      }
-      else
-      {
-        // Parent
-        close(filedes[0]);
-        tmp = dup(1); // Restores the STDOUT file descriptor
-        dup2(filedes[1], 1);
-        cmdline(buf);
-        close(filedes[1]);
-        close(1);
-        dup2(tmp, 1);
-        close(tmp);
-        wait(NULL);
+
+      token3 = strtok(NULL, "|");
+        if (pid < 0)
+        {
+          printf("Error\n");
+        }
+        else if (pid == 0)
+        {
+          // Child
+          int pid2 = fork();
+          pipe(filedes + 2);
+
+          if (pid2 == 0)
+          {
+            close(filedes[1]);
+            tmp = dup(0); // Restores the STDIN file descriptor
+                    // work here
+            dup2(filedes[0], 0);
+            dup2(filedes[3], 1);
+
+            cmdline(seperateSpaces(token3));
+            close(filedes[0]);
+            close(0);
+            dup2(tmp, 0);
+            close(tmp);
+            raise(SIGTERM);
+          }
+
+          close(filedes[1]);
+          tmp = dup(0); // Restores the STDIN file descriptor
+          dup2(filedes[0], 0);
+            // work here
+          cmdline(seperateSpaces(token2));
+          close(filedes[0]);
+          close(0);
+          dup2(tmp, 0);
+          close(tmp);
+          raise(SIGTERM);
+        }
+        else
+        {
+          // Parent
+          close(filedes[0]);
+          tmp = dup(1); // Restores the STDOUT file descriptor
+          dup2(filedes[1], 1);
+          cmdline(token1);
+          close(filedes[1]);
+          close(1);
+          dup2(tmp, 1);
+          close(tmp);
+          wait(NULL);
+        }
       }
       continue;
     }
@@ -585,7 +602,7 @@ int main()
           invokeCmd(k, arg);
       }
       else
-       usage();
+        usage();
 
       if (redir)
       {
