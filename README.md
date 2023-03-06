@@ -4,24 +4,19 @@ Dougie Townsell
 townsell.4@wright.edu
 
 
-Accomplished - In shell.cpp I implmented background, redirection, pipe in the main function. Also I added some more functions in shell.cpp to complete the project
+Accomplished - In shell.cpp I implmented background, redirection, pipe in the main function. Also I added some more functions in shell.cpp to complete the project. 
 
+
+
+# Design
 
 Background -  I used pthreads to implement background I created two void functions one for shell command and one for system command. The function for the  On pthread_create I use those functions as the 3rd paramter and pass in buf + 1 on the system command and a copy of buf for the shell command.
-
 
 Redirection - I created a seperateSpaces function to take in a character pointer to strip any spaces
 I used strchr to search buf for the `>` passed in c+1 into seperateSpaces and stored that in char pointer redir. From there I used my fd and make my creat system call and pass in redir with the file permission then make some dup calls 
 
 
 Pipe -
-
-
-Design - 
-
-
-
-
 
 `-rw-rw-r-- 1 dougie dougie    763 Mar  6 00:23 answers.txt`
 
