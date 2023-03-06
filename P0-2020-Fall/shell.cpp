@@ -382,10 +382,8 @@ void *cmdline(char *buf)
 void *cmBg(void *cmdline)
 {
   char *buf = (char *)cmdline;
-  if (buf[0] == 0) {
-
-  }
-
+ // if (buf[0] == 0) {
+ // }
   if (buf[0] == '!') // begins with !, execute it as
     system(buf + 1); // a normal shell cmd
   else
@@ -468,13 +466,66 @@ int main()
     c = strchr(buf, '|');
     if (c)
     {
+
+
       int pid, filedes[2];
       pipe(filedes);
       *c = '\0';
-      //char* cmd1 = seperatecmd(c + 1, ' ', '!');
-      //printf("%s", cmd1);
       c++;
       pid = fork();
+
+      /*
+      while((c = strchr(&buf, '|')) != NULL) {
+
+
+        if(pipe(fileDes) < 0){
+          perror("error");
+          exit(0);
+        }
+       
+       pipe = fork();
+
+       if (pid < 0)
+      {
+        printf("Error\n");
+      }
+    
+    else if (pid == 0)
+      {
+       if(dup2(tmp, 0) < 0) {
+        perror("error2")
+       }
+
+       if(c != NULL && dup2(filedes[1], 1)) {
+          dup2(filedes[0], 0);
+          
+       } // end of if statment
+      
+         cmdline(seperateSpaces(c))
+         close(filesdes[0]);
+
+        } 
+        
+        
+        else {
+
+        //Parent Prcoess 
+        close(filedes[1]);
+        tmp = filedes[0];
+        wait(NULL);
+
+
+
+
+        }
+        
+
+        
+      } // End of while loop 
+      
+      
+      
+      */
       if (pid < 0)
       {
         printf("Error\n");
