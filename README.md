@@ -4,15 +4,19 @@ Dougie Townsell
 townsell.4@wright.edu
 
 
-Background
+Implementation - In shell.cpp I implmented Backgrounds, Redirection, Pipe in the main function.
 
 
-Redirection 
+Background -  I used pthreads to implement background I created two void functions one for shell command and one for system command. On pthread_create I use those functions as the 3rd paramter and pass in buf + 1 on the system command and a copy of buf for the shell command.
 
 
-Pipe-
+Redirection - 
 
 
+Pipe -
+
+
+Design - 
 
 `-rw-rw-r-- 1 dougie dougie    763 Mar  6 00:23 answers.txt`
 
@@ -63,6 +67,3 @@ Pipe-
 `-rw------- 1 dougie dougie   6808 Apr  2  2007 volume.cpp`
 
 `-rw-rw-r-- 1 dougie dougie  35864 Mar  6 18:51 volume.o`
-
-
-Design - 
