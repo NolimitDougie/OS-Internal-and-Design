@@ -474,20 +474,21 @@ int main()
       int i = 0;
       while (buf[i] != '\0')
       {
-        if(buf[i] == '|') numPipes++;
-i++;
+        if (buf[i] == '|')
+          numPipes++;
+        i++;
       }
 
       printf("%d\n", numPipes);
       int pid, filedes[4];
       pipe(filedes);
-      // *c = '\0';
-      // c++;
-      // pid = fork();
-      token1 = strtok(buf, "|");
-      token2 = strtok(NULL, " |");
        *c = '\0';
-      c++;
+       c++;
+      // pid = fork();
+      // token1 = strtok(buf, "|");
+      // token2 = strtok(NULL, " |");
+     // *c = '\0';
+     // c++;
       pid = fork();
       if (numPipes == 1)
       {
@@ -523,9 +524,10 @@ i++;
       } // end of one pipe
       else if (numPipes == 2)
       {
-
-      token3 = strtok(NULL, "| ");
-       //int pid2 = fork();
+        token1 = strtok(buf, "|");
+        token2 = strtok(NULL, " |");
+        token3 = strtok(NULL, "| ");
+        // int pid2 = fork();
         if (pid < 0)
         {
           printf("Error\n");
@@ -540,7 +542,7 @@ i++;
           {
             close(filedes[2]);
             tmp = dup(0); // Restores the STDIN file descriptor
-                    // work here
+                          // work here
             dup2(filedes[2], 0);
             cmdline(seperateSpaces(token3));
             close(filedes[0]);
@@ -554,10 +556,10 @@ i++;
           tmp = dup(0); // Restores the STDIN file descriptor
           dup2(filedes[0], 0);
           dup2(filedes[3], 1);
-            // work here
+          // work here
           cmdline(seperateSpaces(token2));
           close(filedes[0]);
-         close(filedes[3]);
+          close(filedes[3]);
           close(0);
           dup2(tmp, 0);
           close(tmp);
