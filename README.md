@@ -4,9 +4,7 @@ Dougie Townsell
 townsell.4@wright.edu
 
 
-Accomplished - In shell.cpp I implmented background, redirection, pipe in the main function. Also I added some more functions in shell.cpp to complete the project. 
-
-
+Accomplished - In shell.cpp I implmented background, redirection, pipe in the main function. Also I added some more functions in shell.cpp to complete the project. I encourted problems with multiple pipes I feel like I got very close but cant figure out the why its not outputting. Also I encountered some issues with a signle piple but was able to fix some dup2 and close calls and got the single pipe working.
 
 # Design
 
@@ -16,7 +14,7 @@ Redirection - I created a seperateSpaces function to take in a character pointer
 I used strchr to search buf for the `>` passed in c+1 into seperateSpaces and stored that in char pointer redir. From there I used my fd and make my creat system call and pass in redir with the file permission then make some dup calls 
 
 
-Pipe -
+Pipe - I used strchr to search buf for the pipe. From there I created a file descriptor and pid and piped on the file descriptor then forked a new process and went through some checks on the pid and if the the pipe was succesful I went it and started doing dup2 calls and storing STDIN and STDOUT passing it to the next commands  
 
 `-rw-rw-r-- 1 dougie dougie    763 Mar  6 00:23 answers.txt`
 
