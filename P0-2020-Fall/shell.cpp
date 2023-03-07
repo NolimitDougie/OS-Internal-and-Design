@@ -543,7 +543,7 @@ i++;
                     // work here
             dup2(filedes[2], 0);
             cmdline(seperateSpaces(token3));
-            close(filedes[2]);
+            close(filedes[0]);
             close(0);
             dup2(tmp, 0);
             close(tmp);
@@ -561,7 +561,7 @@ i++;
           close(0);
           dup2(tmp, 0);
           close(tmp);
-          raise(0);
+          exit(0);
         }
         else
         {

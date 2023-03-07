@@ -1,0 +1,24 @@
+# stdTestScriptP0.txt
+
+mkfs D1
+
+ls
+
+!ls 
+
+ls > test.txt 
+
+!cat test.txt
+
+!date 
+
+ls | grep li
+
+!ls | !grep fi
+
+ls | !head -n 4
+
+!(sleep 15;echo sleep done) &
+
+!echo after sleep
+
