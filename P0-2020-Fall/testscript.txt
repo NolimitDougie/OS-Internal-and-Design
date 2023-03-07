@@ -12,7 +12,7 @@ ls > test.txt
 
 !date 
 
-ls | grep li
+ls | !grep li
 
 !ls | !grep fi
 
