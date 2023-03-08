@@ -482,11 +482,11 @@ int main()
       printf("%d\n", numPipes);
       int pid, filedes[4];
       pipe(filedes);
-       *c = '\0';
-       c++;
+       //*c = '\0';
+       //c++;
       // pid = fork();
-      // token1 = strtok(buf, "|");
-      // token2 = strtok(NULL, " |");
+       token1 = strtok(buf, "|");
+       token2 = strtok(NULL, "|");
      // *c = '\0';
      // c++;
       pid = fork();
@@ -524,9 +524,10 @@ int main()
       } // end of one pipe
       else if (numPipes == 2)
       {
-        token1 = strtok(buf, "|");
-        token2 = strtok(NULL, " |");
-        token3 = strtok(NULL, "| ");
+        //  token1 = strtok(buf, "|");
+        //  token2 = strtok(NULL, " |");
+        token3 = strtok(NULL, "|");
+        pipe(filedes + 2);
         // int pid2 = fork();
         if (pid < 0)
         {
@@ -534,24 +535,29 @@ int main()
         }
         else if (pid == 0)
         {
-          // Child
-          int pid2 = fork();
-          pipe(filedes + 2);
+ 
+           int pid2 = fork();
+     
 
           if (pid2 == 0)
           {
-            close(filedes[2]);
+            //close(filedes[2]);
+            close(filedes[0]);
+            close(filedes[1]);
+            close(filedes[3]);
+
             tmp = dup(0); // Restores the STDIN file descriptor
                           // work here
             dup2(filedes[2], 0);
             cmdline(seperateSpaces(token3));
-            close(filedes[0]);
+            close(filedes[2]);
             close(0);
             dup2(tmp, 0);
             close(tmp);
             exit(0);
-          }
+          } else  {
 
+          close(filedes[2]);
           close(filedes[1]);
           tmp = dup(0); // Restores the STDIN file descriptor
           dup2(filedes[0], 0);
@@ -563,12 +569,18 @@ int main()
           close(0);
           dup2(tmp, 0);
           close(tmp);
+
           exit(0);
+          }
+
+       
         }
         else
         {
           // Parent
           close(filedes[0]);
+          close(filedes[3]);
+          close(filedes[2]);
           tmp = dup(1); // Restores the STDOUT file descriptor
           dup2(filedes[1], 1);
           cmdline(token1);
