@@ -501,7 +501,7 @@ int main()
           close(filedes[1]);
           tmp = dup(0); // Restores the STDIN file descriptor
           dup2(filedes[0], 0);
-          cmdline(seperateSpaces(c));
+          cmdline(seperateSpaces(token2));
           close(filedes[0]);
           close(0);
           dup2(tmp, 0);
@@ -513,7 +513,7 @@ int main()
           close(filedes[0]);
           tmp = dup(1); // Restores the STDOUT file descriptor
           dup2(filedes[1], 1);
-          cmdline(buf);
+          cmdline(token1);
           close(filedes[1]);
           close(1);
           dup2(tmp, 1);
