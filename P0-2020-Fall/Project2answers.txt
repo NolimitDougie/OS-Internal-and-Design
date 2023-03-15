@@ -20,6 +20,7 @@ sprintf- sends formatted output to a string
 3. `statBuf.st_size == nSectorsPerDisk * nBytesPerSector` - 
 
 
+4. Five Identifiers 
 
 1. 
 
@@ -32,6 +33,11 @@ sprintf- sends formatted output to a string
 5.
 
 
+5. Pre - post conditions
+
+-
+
+-
 
 
 
