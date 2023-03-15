@@ -17,20 +17,19 @@ sprintf- sends formatted output to a string
 2. routines: fget, memcpy, memset, printf, srtcmp 
    system calls: open, close, write, read, and exit.
    
-3. `statBuf.st_size == nSectorsPerDisk * nBytesPerSector` - 
-
+3. statBuf.st_size == nSectorsPerDisk * nBytesPerSector - checks the disk to see if there is enough room to perform the process on the disk.
 
 4. Five Identifiers 
 
-1. 
+1. In the shell.cpp the invokeCommand fucntion has a uint variable ok it's a bad name it should be renamed to something like checkCmd the way it's used in the code is as a boolean variable it checks to make sure the command is in the command table if not it sets it to 0 aka false.
 
-2.
+2. In volume.cpp line 60 the function uint FileVolume::isOK this should be renamed to something like checkSuperBlock - isOk doesnt not really tell you what the function is checking
 
-3. 
+3. In directory.cpp the function uint okNameSyntax(byte *nm) - it's a soild name that explains what the function is doing a better techinical name for the function may be something like validNameSyntax.
 
-4. 
+4. In directory.cpp the function - void Directory::addLeafName(byte *newName, uint in) - the function adds the file newName with its inode number in to the current directory. A better name for this function would be something like AddFileInDir this explains cleary what the code accomplishes in the function.
 
-5.
+5. In Inode.cpp line 60 the function - uint *Inodes::getInode(uint in, uint * ne) - this is a good name I would not change it. It explains what the code inside of the function is acomplishing 
 
 
 5. Pre - post conditions
