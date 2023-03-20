@@ -197,23 +197,114 @@ void doInode(Arg *a)
 
 void doMkDir(Arg *a)
 {
-  TODO("doMkDir");
+ // TODO("doMkDir");
+wd->createFile ((byte *) a[0].s, wd->nInode);
 }
 
 void doChDir(Arg *a)
 {
-  TODO("doChDir");
+  char *c;
+  char *str = a[0].s;
+  Directory *prevwd;
+  uint inode;
+  if (str[0] == '/') {
+    if (wd != fv->root)
+      delete wd;
+    wd = fv->root;
+    str = &(str[1]);
+  }
+  while ((c = strstr (str, "/"))) {
+    c = '\0';
+    //inode = wd->iNumberOf ((byte *)str); // current wd
+    if (inode = wd->iNumberOf ((byte *)str)) {
+      prevwd = wd;
+      wd = new Directory (prevwd->fv, inode, 0);
+      if (prevwd != fv->root)
+	      delete prevwd;
+    }
+    str = &(c[1]);
+  }
+  //inode = wd->iNumberOf ((byte *)str);
+  if (inode = wd->iNumberOf ((byte *)str)) {
+    prevwd = wd;
+    wd = new Directory (prevwd->fv, inode, 0);
+    if (prevwd != fv->root)
+      delete prevwd;
+  }
+ /// TODO("doChDir");
 }
 
 void doPwd(Arg *a)
 {
-  TODO("doPwd");
-}
+ /// TODO("doPwd");
+  unsigned int count = 0, inode, inodes[32];
+  int j;
+  Directory *dir;
+
+  inode = wd->nInode;
+  while (inode != fv->root->nInode)
+  {
+    inodes[count] = inode;
+    count++;
+    dir = new Directory(fv, inode, 0);
+    inode = dir->iNumberOf((byte *)"..");
+    delete dir;
+  } 
+  if (count)
+  {
+    printf("/%s", fv->root->nameOf(inodes[count - 1]));
+    for (j = count - 2; j >= 0; j--)
+    {
+      dir = new Directory(fv, inodes[j + 1], 0);
+      printf("/%s", dir->nameOf(inodes[j]));
+      delete dir;
+    }
+    printf("\n");
+  }
+  else
+    printf("/\n");
+
+} // end of PWD
 
 void doMv(Arg *a)
 {
-  TODO("doMv");
-}
+   uint inode = wd->iNumberOf ((byte *) a[1].s);
+   if (wd->fv->inodes.getType (inode) == iTypeDirectory) {
+    char *c;
+    char *str = a[1].s;
+    Directory *prevwd, *currentdir;
+
+     if (str[0] == '/') {
+      currentdir = new Directory (wd->fv, fv->root->nInode, 0);
+      str = &(str[1]);
+    }
+    else
+      currentdir = new Directory (wd->fv, wd->nInode, 0);
+
+    c = strstr (str, "/");
+    while ((c = strstr (str, "/"))) {
+      c = '\0';
+      if (inode = currentdir->iNumberOf ((byte *)str)) {
+	    prevwd = currentdir;
+	    currentdir = new Directory (prevwd->fv, inode, 0);
+	if (prevwd != fv->root)
+	    delete prevwd;
+      }
+      str = &(c[1]);
+    }
+    if (inode = currentdir->iNumberOf ((byte *)str)) {
+      prevwd = currentdir;
+      currentdir = new Directory (prevwd->fv, inode, 0);
+      if (prevwd != fv->root)
+	    delete prevwd;
+    }
+    // move file call
+    // delete call
+  } 
+  //else // for case of just trying to rename the file
+
+
+} // end of move 
 
 void doMountDF(Arg *a) // arg a ignored
 {

@@ -207,7 +207,47 @@ uint Directory::deleteFile(byte *leafnm, uint freeInodeFlag)
 
 uint Directory::moveFile(uint pn, byte * leafnm)
 {
-  return TODO("Directory::moveFile");
+ Directory *directory = new Directory (fv, pn, 0);
+  uint inode = directory->setDirEntry (leafnm);
+  if (inode) {
+    //make a delete call
+    // addLeafName call here
+
+
+   if (fv->inodes.getType (inode) == iTypeDirectory) {
+      Directory *dir = new Directory (fv, inode, 0);
+      dir->setDirEntry ((byte *)"..");
+      // add a a delete
+      dir->addLeafName ((byte *)"..", nInode);
+   }
+
+
+
+
+
+   } //end of it statement
+
+  
+  return pn;
+  
+  ///return TODO("Directory::moveFile");
+} // -eof- movefile
+
+uint Directory::renamefile(byte * sourcefile, byte * desfile) {
+
+uint inode = setDirEntry(desfile);
+
+if(inode) {
+
+  delete sourcefile;
+  addLeafName(sourcefile, inode);
+
 }
+
+
+return inode;
+
+}
+
 
 // -eof-

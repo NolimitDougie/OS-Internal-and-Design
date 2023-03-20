@@ -155,6 +155,7 @@ public:
   void addLeafName(byte * leafnm, uint in);
   uint createFile(byte * leafnm, uint dirFlag);
   uint deleteFile(byte * leafnm, uint releaseFlag);
+  uint renamefile(byte * sourceile, byte * desfile); 
   uint moveFile(uint pn, byte * leafnm);
   uint ls();
 
