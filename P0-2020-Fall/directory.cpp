@@ -221,10 +221,6 @@ uint Directory::moveFile(uint pn, byte * leafnm)
       dir->addLeafName ((byte *)"..", nInode);
    }
 
-
-
-
-
    } //end of it statement
 
   
@@ -244,10 +240,41 @@ if(inode) {
 
 }
 
-
 return inode;
 
 }
+
+
+bool Directory::isEmpty(int &counter){
+
+  counter = 0;
+  while(true){
+    char* name = (char*)nextName();
+    //if name is null means reached end of directory.
+    if(name == '\0'){
+      break;
+
+    }else if(strcmp(name, "..") != 0 && strcmp(name, ".") != 0){
+      //If in here dir isn't empty
+      counter++;
+      namesEnd();
+      return false;
+    }
+  }
+
+  namesEnd();
+  return true;
+
+}
+
+
+
+
+
+
+
+
+
 
 
 // -eof-

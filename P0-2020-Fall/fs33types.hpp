@@ -102,6 +102,7 @@ public:
   uint setType(uint in, uint value);
   uint show(uint in);
 
+
 private:
   uint * uintbuffer;		// inodes from one block
   FileVolume * fv;
@@ -157,6 +158,7 @@ public:
   uint deleteFile(byte * leafnm, uint releaseFlag);
   uint renamefile(byte * sourceile, byte * desfile); 
   uint moveFile(uint pn, byte * leafnm);
+  bool isEmpty(int &counter);
   uint ls();
 
   FileVolume * fv;

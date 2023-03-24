@@ -176,16 +176,47 @@ void doCopy(Arg *a)
 
 void doLsLong(Arg *a)
 {
-  printf("\nDirectory listing for disk %s, cwdVNIN == 0x%0lx begins:\n",
+  unsigned inode = wd->iNumberOf((byte *)a[0].s);
+
+  if (inode)
+  {
+    Directory *dir = new Directory(fv, inode, 0);
+    printf("\nDirectory listing for disk %s, cwdVNIN == 0x%0lx begins:\n",
+           dir->fv->simDisk->name, (ulong)cwdVNIN);
+    dir->ls(); // Suspicious!
+    printf("Directory listing ends.\n");
+    delete dir;
+  } else {
+    printf("\nDirectory listing for disk %s, cwdVNIN == 0x%0lx begins:\n",
          wd->fv->simDisk->name, (ulong)cwdVNIN);
-  wd->ls(); // Suspicious!
-  printf("Directory listing ends.\n");
+    wd->ls(); // Suspicious!
+    printf("Directory listing ends.\n");
+   }
 }
 
 void doRm(Arg *a)
 {
-  uint in = wd->fv->deleteFile((byte *)a[0].s);
-  printf("rm %s returns %d.\n", a[0].s, in);
+  char* name = a[0].s;
+  int counter = 0;
+  int inode = wd->iNumberOf((byte*)name);
+  Directory* dir = new Directory(fv, inode, 0);
+   
+
+  bool remove = dir->isEmpty(counter);
+  delete dir;
+
+    if(remove) { 
+    uint in = wd->deleteFile((byte *) a[0].s, 1);
+    printf("%s had %d directory entries.\n", a[0].s, counter);
+  
+  }
+
+  else {
+    printf("%s wasn't deleted, but has %d directories\n", name, counter);
+  }
+
+  //uint in = wd->fv->deleteFile((byte *) a[0].s);
+  //printf("rm %s returns %d.\n", a[0].s, in);
 }
 
 void doInode(Arg *a)
@@ -197,8 +228,8 @@ void doInode(Arg *a)
 
 void doMkDir(Arg *a)
 {
- // TODO("doMkDir");
-wd->createFile ((byte *) a[0].s, wd->nInode);
+  // TODO("doMkDir");
+  wd->createFile((byte *)a[0].s, wd->nInode);
 }
 
 void doChDir(Arg *a)
@@ -207,36 +238,40 @@ void doChDir(Arg *a)
   char *str = a[0].s;
   Directory *prevwd;
   uint inode;
-  if (str[0] == '/') {
+  if (str[0] == '/')
+  {
     if (wd != fv->root)
       delete wd;
     wd = fv->root;
     str = &(str[1]);
   }
-  while ((c = strstr (str, "/"))) {
+  while ((c = strstr(str, "/")))
+  {
     c = '\0';
-    //inode = wd->iNumberOf ((byte *)str); // current wd
-    if (inode = wd->iNumberOf ((byte *)str)) {
+    // inode = wd->iNumberOf ((byte *)str); // current wd
+    if (inode = wd->iNumberOf((byte *)str))
+    {
       prevwd = wd;
-      wd = new Directory (prevwd->fv, inode, 0);
+      wd = new Directory(prevwd->fv, inode, 0);
       if (prevwd != fv->root)
-	      delete prevwd;
+        delete prevwd;
     }
     str = &(c[1]);
   }
-  //inode = wd->iNumberOf ((byte *)str);
-  if (inode = wd->iNumberOf ((byte *)str)) {
+  // inode = wd->iNumberOf ((byte *)str);
+  if (inode = wd->iNumberOf((byte *)str))
+  {
     prevwd = wd;
-    wd = new Directory (prevwd->fv, inode, 0);
+    wd = new Directory(prevwd->fv, inode, 0);
     if (prevwd != fv->root)
       delete prevwd;
   }
- /// TODO("doChDir");
+  /// TODO("doChDir");
 }
 
 void doPwd(Arg *a)
 {
- /// TODO("doPwd");
+  /// TODO("doPwd");
   unsigned int count = 0, inode, inodes[32];
   int j;
   Directory *dir;
@@ -249,7 +284,7 @@ void doPwd(Arg *a)
     dir = new Directory(fv, inode, 0);
     inode = dir->iNumberOf((byte *)"..");
     delete dir;
-  } 
+  }
   if (count)
   {
     printf("/%s", fv->root->nameOf(inodes[count - 1]));
@@ -268,43 +303,47 @@ void doPwd(Arg *a)
 
 void doMv(Arg *a)
 {
-   uint inode = wd->iNumberOf ((byte *) a[1].s);
-   if (wd->fv->inodes.getType (inode) == iTypeDirectory) {
+  uint inode = wd->iNumberOf((byte *)a[1].s);
+  if (wd->fv->inodes.getType(inode) == iTypeDirectory)
+  {
     char *c;
     char *str = a[1].s;
     Directory *prevwd, *currentdir;
 
-     if (str[0] == '/') {
-      currentdir = new Directory (wd->fv, fv->root->nInode, 0);
+    if (str[0] == '/')
+    {
+      currentdir = new Directory(wd->fv, fv->root->nInode, 0);
       str = &(str[1]);
     }
     else
-      currentdir = new Directory (wd->fv, wd->nInode, 0);
+      currentdir = new Directory(wd->fv, wd->nInode, 0);
 
-    c = strstr (str, "/");
-    while ((c = strstr (str, "/"))) {
+    c = strstr(str, "/");
+    while ((c = strstr(str, "/")))
+    {
       c = '\0';
-      if (inode = currentdir->iNumberOf ((byte *)str)) {
-	    prevwd = currentdir;
-	    currentdir = new Directory (prevwd->fv, inode, 0);
-	if (prevwd != fv->root)
-	    delete prevwd;
+      if (inode = currentdir->iNumberOf((byte *)str))
+      {
+        prevwd = currentdir;
+        currentdir = new Directory(prevwd->fv, inode, 0);
+        if (prevwd != fv->root)
+          delete prevwd;
       }
       str = &(c[1]);
     }
-    if (inode = currentdir->iNumberOf ((byte *)str)) {
+    if (inode = currentdir->iNumberOf((byte *)str))
+    {
       prevwd = currentdir;
-      currentdir = new Directory (prevwd->fv, inode, 0);
+      currentdir = new Directory(prevwd->fv, inode, 0);
       if (prevwd != fv->root)
-	    delete prevwd;
+        delete prevwd;
     }
     // move file call
     // delete call
-  } 
-  //else // for case of just trying to rename the file
+  }
+  // else // for case of just trying to rename the file
 
-
-} // end of move 
+} // end of move
 
 void doMountDF(Arg *a) // arg a ignored
 {
@@ -345,6 +384,7 @@ public:
     {"echo", "ssss", "", doEcho},
     {"inode", "u", "v", doInode},
     {"ls", "", "v", doLsLong},
+    {"ls", "s", "v", doLsLong},
     {"lslong", "", "v", doLsLong},
     {"mkdir", "s", "v", doMkDir},
     {"mkdisk", "s", "", doMakeDisk},
@@ -573,13 +613,13 @@ int main()
       printf("%d\n", numPipes);
       int pid, filedes[4];
       pipe(filedes);
-       //*c = '\0';
-       //c++;
+      //*c = '\0';
+      // c++;
       // pid = fork();
-       token1 = strtok(buf, "|");
-       token2 = strtok(NULL, "|");
-     // *c = '\0';
-     // c++;
+      token1 = strtok(buf, "|");
+      token2 = strtok(NULL, "|");
+      // *c = '\0';
+      // c++;
       pid = fork();
       if (numPipes == 1)
       {
@@ -626,13 +666,12 @@ int main()
         }
         else if (pid == 0)
         {
- 
-           int pid2 = fork();
-     
+
+          int pid2 = fork();
 
           if (pid2 == 0)
           {
-            //close(filedes[2]);
+            // close(filedes[2]);
             close(filedes[0]);
             close(filedes[1]);
             close(filedes[3]);
@@ -646,25 +685,25 @@ int main()
             dup2(tmp, 0);
             close(tmp);
             exit(0);
-          } else  {
-
-          close(filedes[2]);
-          close(filedes[1]);
-          tmp = dup(0); // Restores the STDIN file descriptor
-          dup2(filedes[0], 0);
-          dup2(filedes[3], 1);
-          // work here
-          cmdline(seperateSpaces(token2));
-          close(filedes[0]);
-          close(filedes[3]);
-          close(0);
-          dup2(tmp, 0);
-          close(tmp);
-
-          exit(0);
           }
+          else
+          {
 
-       
+            close(filedes[2]);
+            close(filedes[1]);
+            tmp = dup(0); // Restores the STDIN file descriptor
+            dup2(filedes[0], 0);
+            dup2(filedes[3], 1);
+            // work here
+            cmdline(seperateSpaces(token2));
+            close(filedes[0]);
+            close(filedes[3]);
+            close(0);
+            dup2(tmp, 0);
+            close(tmp);
+
+            exit(0);
+          }
         }
         else
         {
