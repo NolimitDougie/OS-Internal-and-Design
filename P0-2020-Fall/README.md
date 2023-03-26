@@ -4,17 +4,19 @@ Dougie Townsell
 townsell.4@wright.edu
 
 
-Accomplished - In shell.cpp I implmented background, redirection, pipe in the main function. Also I added some more functions in shell.cpp to complete the project. I encourted problems with multiple pipes I feel like I got very close but cant figure out the why its not outputting. Also I encountered some issues with a signle piple but was able to fix some dup2 and close calls and got the single pipe working.
+Accomplished - I accomplished this project by working in shell.cpp directory.cpp and volume.cpp. In shell.cpp I implemented the mkdir, cd, pwd, and mv command. I also had to add some functions and ajust some functions in directory.cpp and volume.cpp. The mv command was the hardest part of the project there are may cases to account for in the method 
 
 # Design
 
-Background -  I used pthreads to implement background I created two void functions one for shell command and one for system command. The function for the  On pthread_create I use those functions as the 3rd paramter and pass in buf + 1 on the system command and a copy of buf for the shell command.
+mkdir - This took one line to create the directory `wd->createFile((byte *)a[0].s, wd->nInode)` I used the wd to call the create file and pass in the argument and wd Inode number.
 
-Redirection - I created a seperateSpaces function to take in a character pointer to strip any spaces
-I used strchr to search buf for the `>` passed in c+1 into seperateSpaces and stored that in char pointer redir. From there I used my fd and make my creat system call and pass in redir with the file permission then make some dup calls 
+cd - For cd I made the wd the fv->root. Then I looked for the '/' in the path and moved directorys using wd and prev a variable I created in the function 
 
+rm - For improving rm I made a fucntion to check and see if the directory is empty. From the rm function I created a directory and called my function and passed in the counter variable and if the directory was empty  then we go head and call wd->delete file. If not then print out a message saying the directory was not deleted
 
-Pipe - I used strchr to search buf for the pipe. From there I created a file descriptor and pid and piped on the file descriptor then forked a new process and went through some checks on the pid and if the the pipe was succesful I went it and started doing dup2 calls and storing STDIN and STDOUT passing it to the next commands  
+mv - 
+
+inode - 
 
 `-rw------- 1 dougie dougie   2902 Apr  2  2007 bitvector.cpp
 -rw-rw-r-- 1 dougie dougie 614400 Mar  6 17:48 cmdtries.txt
