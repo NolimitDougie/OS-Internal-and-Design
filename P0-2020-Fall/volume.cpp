@@ -202,8 +202,22 @@ uint FileVolume::copy33file(byte *srcleaf, byte *dstleaf)
 uint FileVolume::move(uint din, byte *dstleaf,
 		      uint wn, uint jn, byte *srcleaf)
 {
-  return TODO("FileVolume::move");
+  uint vn = simDisk->simDiskNum, result = 0;
+  Directory * dstDir = new Directory(this, din, 0);
+  uint inode = dstDir->iNumberOf (dstleaf);
+  if (inode != 0) {
+    if (inodes.getType(inode) == iTypeDirectory) {
+      delete dstDir;
+      dstDir = new Directory(this, inode, 0);
+      dstleaf = srcleaf;
+    }
+  }
+  result = dstDir->moveFile(jn, srcleaf, dstleaf);
+  delete dstDir;
+  return result;
 }
+
+
 
 uint FileVolume::rdwrBlock(uint nBlock, void *p, uint writeFlag)
 {

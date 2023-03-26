@@ -186,37 +186,39 @@ void doLsLong(Arg *a)
     dir->ls(); // Suspicious!
     printf("Directory listing ends.\n");
     delete dir;
-  } else {
+  }
+  else
+  {
     printf("\nDirectory listing for disk %s, cwdVNIN == 0x%0lx begins:\n",
-         wd->fv->simDisk->name, (ulong)cwdVNIN);
+           wd->fv->simDisk->name, (ulong)cwdVNIN);
     wd->ls(); // Suspicious!
     printf("Directory listing ends.\n");
-   }
+  }
 }
 
 void doRm(Arg *a)
 {
-  char* name = a[0].s;
+  char *name = a[0].s;
   int counter = 0;
-  int inode = wd->iNumberOf((byte*)name);
-  Directory* dir = new Directory(fv, inode, 0);
-   
+  int inode = wd->iNumberOf((byte *)name);
+  Directory *dir = new Directory(fv, inode, 0);
 
   bool remove = dir->isEmpty(counter);
   delete dir;
 
-    if(remove) { 
-    uint in = wd->deleteFile((byte *) a[0].s, 1);
+  if (remove)
+  {
+    uint in = wd->deleteFile((byte *)a[0].s, 1);
     printf("%s had %d directory entries.\n", a[0].s, counter);
-  
   }
 
-  else {
+  else
+  {
     printf("%s wasn't deleted, but has %d directories\n", name, counter);
   }
 
-  //uint in = wd->fv->deleteFile((byte *) a[0].s);
-  //printf("rm %s returns %d.\n", a[0].s, in);
+  // uint in = wd->fv->deleteFile((byte *) a[0].s);
+  // printf("rm %s returns %d.\n", a[0].s, in);
 }
 
 void doInode(Arg *a)
@@ -301,49 +303,59 @@ void doPwd(Arg *a)
 
 } // end of PWD
 
+
+char* processPath (byte *path, uint &in)
+{
+  Directory *current;
+  char *p = (char *)path, *result;
+ // char *c;
+  uint inode;
+  if (p[0] == '/') {
+    p = &(p[1]);
+    in = fv->root->nInode;
+    current = new Directory (fv, fv->root->nInode, 0);
+  }
+  else {
+    in = wd->nInode;
+    current = new Directory (fv, wd->nInode, 0);
+  }
+  result = p;
+  strtok (p, "/");
+  //c = strstr (str, "/");
+  while (1) {
+    result = p;
+    inode = current->iNumberOf ((byte *)p);
+    if (inode == 0) {
+      if (in > 0)
+	return result;
+      in = 0;
+      return 0;
+    }
+    delete current;
+    current = new Directory (fv, inode, 0);
+    p = strtok (0, "/");
+    //
+    if (p == 0)
+      break;
+    in = inode;
+  }
+
+  delete current;
+  return result;
+}
+
 void doMv(Arg *a)
 {
-  uint inode = wd->iNumberOf((byte *)a[1].s);
-  if (wd->fv->inodes.getType(inode) == iTypeDirectory)
-  {
-    char *c;
-    char *str = a[1].s;
-    Directory *prevwd, *currentdir;
-
-    if (str[0] == '/')
-    {
-      currentdir = new Directory(wd->fv, fv->root->nInode, 0);
-      str = &(str[1]);
-    }
-    else
-      currentdir = new Directory(wd->fv, wd->nInode, 0);
-
-    c = strstr(str, "/");
-    while ((c = strstr(str, "/")))
-    {
-      c = '\0';
-      if (inode = currentdir->iNumberOf((byte *)str))
-      {
-        prevwd = currentdir;
-        currentdir = new Directory(prevwd->fv, inode, 0);
-        if (prevwd != fv->root)
-          delete prevwd;
-      }
-      str = &(c[1]);
-    }
-    if (inode = currentdir->iNumberOf((byte *)str))
-    {
-      prevwd = currentdir;
-      currentdir = new Directory(prevwd->fv, inode, 0);
-      if (prevwd != fv->root)
-        delete prevwd;
-    }
-    // move file call
-    // delete call
-  }
-  // else // for case of just trying to rename the file
-
+  uint srcn, dstn;
+  char *src = processPath ((byte *) a[0].s, srcn);
+  char *dst = processPath ((byte *) a[1].s, dstn);
+  if (srcn == 0 || dstn == 0)
+    return;
+  uint result = fv->move(dstn, (byte *)dst, 0, srcn, (byte *)src);
+  printf("result %d\n", result);
+  
 } // end of move
+
 
 void doMountDF(Arg *a) // arg a ignored
 {

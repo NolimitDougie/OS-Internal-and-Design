@@ -157,7 +157,7 @@ public:
   uint createFile(byte * leafnm, uint dirFlag);
   uint deleteFile(byte * leafnm, uint releaseFlag);
   uint renamefile(byte * sourceile, byte * desfile); 
-  uint moveFile(uint pn, byte * leafnm);
+  uint moveFile(uint pn, byte *srcleaf, byte *dstleaf);
   bool isEmpty(int &counter);
   uint ls();
 
