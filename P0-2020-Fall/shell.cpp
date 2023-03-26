@@ -33,9 +33,9 @@ uint TODO()
   return 0;
 }
 
-uint TODO(char *p)
+uint TODO(char *c)
 {
-  printf("%s to be done!\n", p);
+  printf("%s to be done!\n", c);
   return 0;
 }
 
@@ -49,9 +49,9 @@ uint isAlphaNumDot(char c)
   return c == '.' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9';
 }
 
-int toNum(const char *p)
+int toNum(const char *c)
 {
-  return (p != 0 && '0' <= *p && *p <= '9' ? atoi(p) : 0);
+  return (c != 0 && '0' <= *c && *c <= '9' ? atoi(c) : 0);
 }
 
 SimDisk *mkSimDisk(byte *name)
@@ -71,7 +71,7 @@ void doMakeDisk(Arg *a)
   SimDisk *simDisk = mkSimDisk((byte *)a[0].s);
   if (simDisk == 0)
     return;
-  printf("new SimDisk(%s) = %p, nSectorsPerDisk=%d,"
+  printf("new SimDisk(%s) = %c, nSectorsPerDisk=%d,"
          "nBytesPerSector=%d, simDiskNum=%d)\n",
          simDisk->name, (void *)simDisk, simDisk->nSectorsPerDisk,
          simDisk->nBytesPerSector, simDisk->simDiskNum);
@@ -123,7 +123,7 @@ void doMakeFV(Arg *a)
   if (simDisk == 0)
     return;
   fv = simDisk->make33fv();
-  printf("make33fv() = %p, Name == %s, Disk# == %d\n",
+  printf("make33fv() = %c, Name == %s, Disk# == %d\n",
          (void *)fv, a[0].s, simDisk->simDiskNum);
 
   if (fv)
@@ -199,22 +199,22 @@ void doLsLong(Arg *a)
 void doRm(Arg *a)
 {
   char *name = a[0].s;
-  int counter = 0;
+  int numDir = 0;
   int inode = wd->iNumberOf((byte *)name);
+  
   Directory *dir = new Directory(fv, inode, 0);
-
-  bool remove = dir->isEmpty(counter);
+  bool remove = dir->isEmpty(numDir);
   delete dir;
 
   if (remove)
   {
     uint in = wd->deleteFile((byte *)a[0].s, 1);
-    printf("%s had %d directory entries.\n", a[0].s, counter);
+    printf("%s had %d directory entries.\n", a[0].s, numDir);
   }
 
   else
   {
-    printf("%s wasn't deleted, but has %d directories\n", name, counter);
+    printf("%s wasn't deleted, but has %d directories\n", name, numDir);
   }
 
   // uint in = wd->fv->deleteFile((byte *) a[0].s);
@@ -307,24 +307,22 @@ void doPwd(Arg *a)
 char* processPath (byte *path, uint &in)
 {
   Directory *current;
-  char *p = (char *)path, *result;
- // char *c;
+  char *c = (char *)path, *result;
   uint inode;
-  if (p[0] == '/') {
-    p = &(p[1]);
-    in = fv->root->nInode;
-    current = new Directory (fv, fv->root->nInode, 0);
+  if (c[0] == '/') {
+    c = &(c[1]);
+    in = fv->root->nInode; // Inode number of the root directory
+    current = new Directory (fv, fv->root->nInode, 0); // Creates the root directory 
   }
   else {
     in = wd->nInode;
     current = new Directory (fv, wd->nInode, 0);
   }
-  result = p;
-  strtok (p, "/");
-  //c = strstr (str, "/");
-  while (1) {
-    result = p;
-    inode = current->iNumberOf ((byte *)p);
+  result = c;
+  strtok (c, "/");
+  while (true) {
+    result = c;
+    inode = current->iNumberOf ((byte *)c);
     if (inode == 0) {
       if (in > 0)
 	return result;
@@ -333,19 +331,19 @@ char* processPath (byte *path, uint &in)
     }
     delete current;
     current = new Directory (fv, inode, 0);
-    p = strtok (0, "/");
-    //
-    if (p == 0)
+    c = strtok (0, "/");
+    if (c == 0)
       break;
     in = inode;
   }
-
   delete current;
   return result;
-}
+  } 
 
 void doMv(Arg *a)
 {
+  uint inode = wd->iNumberOf ((byte *) a[1].s);
+  if (wd->fv->inodes.getType (inode) == iTypeDirectory) {
   uint srcn, dstn;
   char *src = processPath ((byte *) a[0].s, srcn);
   char *dst = processPath ((byte *) a[1].s, dstn);
@@ -353,6 +351,8 @@ void doMv(Arg *a)
     return;
   uint result = fv->move(dstn, (byte *)dst, 0, srcn, (byte *)src);
   printf("result %d\n", result);
+  } else 
+    wd->renamefile ((byte *) a[0].s, (byte *) a[1].s);
   
 } // end of move
 
@@ -552,9 +552,9 @@ void *systemBG(void *cmd)
 void ourgets(char *buf)
 {
   fgets(buf, 1024, stdin);
-  char *p = index(buf, '\n');
-  if (p)
-    *p = 0;
+  char *c = index(buf, '\n');
+  if (c)
+    *c = 0;
 }
 
 char *seperateSpaces(char *c)

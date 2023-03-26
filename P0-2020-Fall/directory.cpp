@@ -236,31 +236,28 @@ uint Directory::moveFile(uint pn, byte *srcleaf, byte *dstleaf)
 
 uint Directory::renamefile(byte *sourcefile, byte *desfile)
 {
-
-  uint inode = setDirEntry(sourcefile);
-
-  if (inode)
-  {
+  uint inode = setDirEntry (sourcefile);
+  if (inode) {
+    dirf->deletePrecedingBytes
+      (1 + strlen((char *) sourcefile) + fv->superBlock.iWidth);
+    addLeafName(desfile, inode);
   }
-
   return inode;
 }
 
-bool Directory::isEmpty(int &counter)
+bool Directory::isEmpty(int &numDir)
 {
-  counter = 0;
+  numDir = 0;
   while (true)
   {
     char *name = (char *)nextName();
-    // if name is null means reached end of directory.
     if (name == NULL)
     {
       break;
     }
     else if (strcmp(name, "..") != 0 && strcmp(name, ".") != 0)
     {
-      // If in here dir isn't empty
-      counter++;
+      numDir++;
       namesEnd();
       return false;
     }
