@@ -217,8 +217,6 @@ uint FileVolume::move(uint din, byte *dstleaf,
   return result;
 }
 
-
-
 uint FileVolume::rdwrBlock(uint nBlock, void *p, uint writeFlag)
 {
   uint nbps = simDisk->nBytesPerSector;

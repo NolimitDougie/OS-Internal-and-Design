@@ -201,7 +201,7 @@ void doRm(Arg *a)
   char *name = a[0].s;
   int numDir = 0;
   int inode = wd->iNumberOf((byte *)name);
-  
+
   Directory *dir = new Directory(fv, inode, 0);
   bool remove = dir->isEmpty(numDir);
   delete dir;
@@ -216,7 +216,6 @@ void doRm(Arg *a)
   {
     printf("%s wasn't deleted, but has %d directories\n", name, numDir);
   }
-
   // uint in = wd->fv->deleteFile((byte *) a[0].s);
   // printf("rm %s returns %d.\n", a[0].s, in);
 }
@@ -250,7 +249,6 @@ void doChDir(Arg *a)
   while ((c = strstr(str, "/")))
   {
     c = '\0';
-    // inode = wd->iNumberOf ((byte *)str); // current wd
     if (inode = wd->iNumberOf((byte *)str))
     {
       prevwd = wd;
@@ -260,7 +258,6 @@ void doChDir(Arg *a)
     }
     str = &(c[1]);
   }
-  // inode = wd->iNumberOf ((byte *)str);
   if (inode = wd->iNumberOf((byte *)str))
   {
     prevwd = wd;
@@ -268,7 +265,6 @@ void doChDir(Arg *a)
     if (prevwd != fv->root)
       delete prevwd;
   }
-  /// TODO("doChDir");
 }
 
 void doPwd(Arg *a)

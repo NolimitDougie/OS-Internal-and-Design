@@ -1,6 +1,0 @@
-
-Directory listing for disk D1, cwdVNIN == 0x20001 begins:
-      1 drw-rw-rw-    1 yourName yourGroup      24 Jul 15 12:34 .
-      1 drw-rw-rw-    1 yourName yourGroup      24 Jul 15 12:34 ..
-      2 drw-rw-rw-    1 yourName yourGroup      13 Jul 15 12:34 Dougie
-Directory listing ends.
