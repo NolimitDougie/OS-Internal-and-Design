@@ -216,20 +216,24 @@ void doRm(Arg *a)
   {
     printf("%s wasn't deleted, but has %d directories\n", name, numDir);
   }
-  // uint in = wd->fv->deleteFile((byte *) a[0].s);
-  // printf("rm %s returns %d.\n", a[0].s, in);
 }
 
 void doInode(Arg *a)
 {
-  uint ni = a[0].u;
-
-  wd->fv->inodes.show(ni);
+   uint ni = a[0].u;
+  char* name = a[0].s;
+  uint inode = wd->iNumberOf((byte*)name);
+   
+   if (inode) {
+    wd->fv->inodes.show(inode);
+   } else if (ni)
+     wd->fv->inodes.show(ni);
+     else 
+     printf("%s doesn't exist\n", name);
 }
 
 void doMkDir(Arg *a)
 {
-  // TODO("doMkDir");
   wd->createFile((byte *)a[0].s, wd->nInode);
 }
 
@@ -391,6 +395,7 @@ public:
     {"cp", "ss", "v", doCopy},
     {"echo", "ssss", "", doEcho},
     {"inode", "u", "v", doInode},
+    {"inode", "s", "v", doInode},
     {"ls", "", "v", doLsLong},
     {"ls", "s", "v", doLsLong},
     {"lslong", "", "v", doLsLong},
