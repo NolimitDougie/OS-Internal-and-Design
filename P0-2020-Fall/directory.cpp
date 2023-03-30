@@ -4,6 +4,7 @@
  */
 
 #include "fs33types.hpp"
+#include <vector>
 
 #define iNumber(ptr) (*(ulong *)(ptr + strlen((char *)ptr) + 1))
 
@@ -264,6 +265,19 @@ bool Directory::isEmpty(int &numDir)
   }
   namesEnd();
   return true;
+}
+
+std::vector<std::string> Directory::getEntries()
+{
+  byte *bp = 0;
+  std::vector<std::string> entriesVec;
+  while ((bp = nextName()) != 0) {
+    if (strcmp((char *) bp, ".") != 0 && strcmp((char *) bp, "..") != 0) {
+      entriesVec.push_back((char *) bp);
+    }
+  }
+  namesEnd();
+  return entriesVec;
 }
 
 // -eof-

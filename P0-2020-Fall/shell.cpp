@@ -218,6 +218,58 @@ void doRm(Arg *a)
   }
 }
 
+void dorecursiveHelper(const char *tmp)
+{
+  
+  int count = 0;
+
+  uint inode = wd->iNumberOf((byte *)tmp);  // Gets inode of wd;  
+
+ if (inode != 0 && wd->fv->inodes.getType(inode) == iTypeDirectory) {
+    wd = new Directory(fv, inode, 0);
+  } 
+  else if (inode != 0 && wd->fv->inodes.getType(inode) == iTypeOrdinary) {
+    return;
+  }
+ 
+Directory *dir = wd;  // Makes temp variable to hold wd 
+
+ bool checkDir = dir->isEmpty(count);
+
+ if (!checkDir) {
+   // Advance the directory 
+  std::vector<std::string> entriesVec = dir->getEntries();
+
+  for (long unsigned int i = 0; i < entriesVec.size(); i++) {
+
+   const char * tmpVec = entriesVec[i].c_str();
+   inode = wd->iNumberOf((byte *) tmpVec);
+   if(inode) {
+   dorecursiveHelper(tmpVec);
+   wd = dir;
+   wd->deleteFile((byte *)tmp, 1);
+   }
+ }
+
+ } 
+
+ delete(wd);
+
+}
+
+
+void dorecursiveRm(Arg * a) {
+    int count = 0;
+    if (strcmp(a[0].s, "-fr") != 0 || strcmp(a[0].s, "-rf") != 0) {
+    Directory * curDir = wd;
+    dorecursiveHelper(a[1].s);
+    wd = curDir;
+    wd->deleteFile((byte *) a[1].s, 1);
+    return;
+  }
+  printf("Incorrect flag for recursive rm.\n");
+}
+
 void doInode(Arg *a)
 {
    uint ni = a[0].u;
@@ -408,6 +460,7 @@ public:
     {"rddisk", "su", "", doReadDisk},
     {"rmdir", "s", "v", doRm},
     {"rm", "s", "v", doRm},
+    {"rm", "ss", "v", dorecursiveRm},
     {"pwd", "", "v", doPwd},
     {"q", "", "", doQuit},
     {"quit", "", "", doQuit},

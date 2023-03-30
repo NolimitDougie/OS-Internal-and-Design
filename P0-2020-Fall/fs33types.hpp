@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <vector>
+#include <string>
 
 typedef unsigned char byte;
 typedef unsigned short int ushort;
@@ -158,6 +160,7 @@ public:
   uint deleteFile(byte * leafnm, uint releaseFlag);
   uint renamefile(byte * sourceile, byte * desfile); 
   uint moveFile(uint pn, byte *srcleaf, byte *dstleaf);
+  std::vector<std::string> getEntries();
   bool isEmpty(int &counter);
   uint ls();
 

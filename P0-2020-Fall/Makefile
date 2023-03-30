@@ -14,7 +14,6 @@ CC = g++
 .cpp.o:
 	$(CC) $(CFLAGS) -c $<
 
-
 OBJFILES = simdisk.o bitvector.o directory.o file.o \
   inodes.o volume.o mount.o shell.o
 
