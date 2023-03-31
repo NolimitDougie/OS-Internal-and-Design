@@ -34,9 +34,17 @@ sprintf- sends formatted output to a string
 
 5. Pre - post conditions
 
--
+/* pre:: Valid unixFilePath && non-existed fs33leaf && Valid initialized superBlock;;
+post:: Verify the file exists in the file system, and if so reads the contents of newf,
+and writes them to the file at "unixFilePath" in the UNIX file system*/
+uint FileVolume::read33file(byte *fs33leaf, byte *unixFilePath)
+...
 
--
+/* pre:: Valid fs33leaf && non-existed and writable unixFilePath;;
+post:: Verify the file exists in the file system, 
+and if so writes the contents of each block to the Unix file, 
+and returns the total number of bytes written to the Unix file*/
+uint FileVolume::write33file(byte *unixFilePath, byte *fs33leaf)
 
 
 
