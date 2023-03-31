@@ -258,7 +258,6 @@ void doRm(Arg *a)
 
   bool remove = dir->isEmpty(numContents);
 
-
   if (wd->fv->inodes.getType(inode) == iTypeDirectory && remove) {
      wd->deleteFile(tmp, 1);
     printf("Successfully removed directory '%s' with inode %d and %d entries.\n", a[0].s, inode, numContents);
