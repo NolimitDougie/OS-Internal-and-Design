@@ -14,9 +14,9 @@ cd - For cd I made the wd the fv->root. Then I looked for the '/' in the path an
 
 rm - For improving rm I made a fucntion to check and see if the directory is empty. From the rm function I created a directory and called my function and passed in the counter variable and if the directory was empty  then we go head and call wd->delete file. If not then print out a message saying the directory was not deleted
 
-mv - 
+mv - I had to make a few functions and adjust some functions in Directory and Volume.cpp to get everything to work on move. In shell.cpp I made a helper function to complete the mv and just call it in mv. In Directory.cpp I made a renameFile function to handle the case if your just trying to rename the directory or file 
 
-inode - 
+inode - I just got the inode of the wd checked if was valid this displayed it 
 
 `-rw------- 1 dougie dougie   2902 Apr  2  2007 bitvector.cpp
 -rw-rw-r-- 1 dougie dougie 614400 Mar  6 17:48 cmdtries.txt
