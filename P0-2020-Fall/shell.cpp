@@ -246,25 +246,35 @@ void lsRecursive(Arg * a) {
 
 void doRm(Arg *a)
 {
-  char *name = a[0].s;
-  int numDir = 0;
-  int inode = wd->iNumberOf((byte *)name);
-
+ char *dirName = (char *)a[0].s;
+ byte *tmp = (byte *)dirName;
+ uint inode = wd->iNumberOf(tmp);
+  if (inode == 0) {
+    printf("File/Directory not found.\n");
+    return;
+  }
+  int numContents = 0;
   Directory *dir = new Directory(fv, inode, 0);
-  bool remove = dir->isEmpty(numDir);
-  delete dir;
 
-  if (remove)
-  {
-    uint in = wd->deleteFile((byte *)a[0].s, 1);
-    printf("%s had %d directory entries.\n", a[0].s, numDir);
-  }
+  bool remove = dir->isEmpty(numContents);
 
-  else
-  {
-    printf("%s wasn't deleted, but has %d directories\n", name, numDir);
+
+  if (wd->fv->inodes.getType(inode) == iTypeDirectory && remove) {
+     wd->deleteFile(tmp, 1);
+    printf("Successfully removed directory '%s' with inode %d and %d entries.\n", a[0].s, inode, numContents);
+    return;
   }
-}
+  else if (wd->fv->inodes.getType(inode) == iTypeDirectory && !remove) {
+    printf("Unable to remove directory '%s' with inode %d and %d entries.\n", a[0].s, inode, numContents);
+    return;
+  }
+  else if (wd->fv->inodes.getType(inode) == iTypeOrdinary) {
+    inode = wd->deleteFile((byte *) a[0].s, 1);
+    printf("Successfully removed file '%s' with inode %d.\n", a[0].s, inode);
+    return;
+  } 
+
+ }
 
 void dorecursiveHelper(Directory *tmp)
 {
