@@ -196,6 +196,54 @@ void doLsLong(Arg *a)
   }
 }
 
+void lsRecursiveHelper(Directory *tmp) {
+
+    std::vector<std::string> entriesVec = tmp->getEntries();
+
+    for (long unsigned int i = 0; i < entriesVec.size(); i++)
+    {
+
+      const char *tmpVec = entriesVec[i].c_str();
+      uint inode = tmp->iNumberOf((byte *)tmpVec);
+      
+      if (inode != 0 && wd->fv->inodes.getType(inode) == iTypeDirectory)
+      {
+        Directory *newDir = new Directory(fv, inode, 0);
+        lsRecursiveHelper(newDir);  
+      }
+
+    printf("\nDirectory listing for disk %s, cwdVNIN == 0x%0lx begins:\n",
+           tmp->fv->simDisk->name, (ulong)cwdVNIN);
+    tmp->ls(); // Suspicious!
+    printf("Directory listing ends.\n");
+   
+  }
+
+
+  delete (tmp);
+
+}
+
+void lsRecursive(Arg * a) {
+
+   if (strcmp(a[0].s, "-lR") == 0 || strcmp(a[0].s, "-Rl") == 0) 
+  {
+    uint inode = wd->iNumberOf((byte *)a[1].s);
+    if (inode != 0 && fv->inodes.getType(inode) == iTypeDirectory)
+    {
+      Directory *curDir = new Directory(fv, inode, 0);
+      lsRecursiveHelper(curDir);
+    }
+    //const byte * c = wd->nameOf(inode);
+      wd->ls();
+     //doLsLong((Arg *)c);
+     return;
+  
+  }
+  printf("Incorrect flag for recursive ls");
+
+}
+
 void doRm(Arg *a)
 {
   char *name = a[0].s;
@@ -218,70 +266,65 @@ void doRm(Arg *a)
   }
 }
 
-void dorecursiveHelper(const char *tmp)
+void dorecursiveHelper(Directory *tmp)
 {
-  
+
   int count = 0;
 
-  uint inode = wd->iNumberOf((byte *)tmp);  // Gets inode of wd;  
+  bool checkDir = tmp->isEmpty(count);
 
- if (inode != 0 && wd->fv->inodes.getType(inode) == iTypeDirectory) {
-    wd = new Directory(fv, inode, 0);
-  } 
-  else if (inode != 0 && wd->fv->inodes.getType(inode) == iTypeOrdinary) {
-    return;
+  if (!checkDir)
+  {
+    // Advance the directory
+    std::vector<std::string> entriesVec = tmp->getEntries();
+    for (long unsigned int i = 0; i < entriesVec.size(); i++)
+    {
+
+      const char *tmpVec = entriesVec[i].c_str();
+      uint inode = tmp->iNumberOf((byte *)tmpVec);
+      if (inode != 0 && wd->fv->inodes.getType(inode) == iTypeDirectory)
+      {
+        Directory *newDir = new Directory(fv, inode, 0);
+        dorecursiveHelper(newDir);
+      }
+      tmp->deleteFile((byte *)tmp, 1);
+    }
   }
- 
-Directory *dir = wd;  // Makes temp variable to hold wd 
 
- bool checkDir = dir->isEmpty(count);
-
- if (!checkDir) {
-   // Advance the directory 
-  std::vector<std::string> entriesVec = dir->getEntries();
-
-  for (long unsigned int i = 0; i < entriesVec.size(); i++) {
-
-   const char * tmpVec = entriesVec[i].c_str();
-   inode = wd->iNumberOf((byte *) tmpVec);
-   if(inode) {
-   dorecursiveHelper(tmpVec);
-   wd = dir;
-   wd->deleteFile((byte *)tmp, 1);
-   }
- }
-
- } 
-
- delete(wd);
-
+  delete (tmp);
 }
 
-
-void dorecursiveRm(Arg * a) {
-    int count = 0;
-    if (strcmp(a[0].s, "-fr") != 0 || strcmp(a[0].s, "-rf") != 0) {
-    Directory * curDir = wd;
-    dorecursiveHelper(a[1].s);
-    wd = curDir;
-    wd->deleteFile((byte *) a[1].s, 1);
-    return;
+void dorecursiveRm(Arg *a)
+{
+  int count = 0;
+  if (strcmp(a[0].s, "-fr") != 0 || strcmp(a[0].s, "-rf") != 0)
+  {
+    uint inode = wd->iNumberOf((byte *)a[1].s);
+    if (inode != 0 && fv->inodes.getType(inode) == iTypeDirectory)
+    {
+      Directory *curDir = new Directory(fv, inode, 0);
+      dorecursiveHelper(curDir);
+    }
+      wd->deleteFile((byte *)a[1].s, 1);  
+      return;
   }
   printf("Incorrect flag for recursive rm.\n");
 }
 
 void doInode(Arg *a)
 {
-   uint ni = a[0].u;
-  char* name = a[0].s;
-  uint inode = wd->iNumberOf((byte*)name);
-   
-   if (inode) {
+  uint ni = a[0].u;
+  char *name = a[0].s;
+  uint inode = wd->iNumberOf((byte *)name);
+
+  if (inode)
+  {
     wd->fv->inodes.show(inode);
-   } else if (ni)
-     wd->fv->inodes.show(ni);
-     else 
-     printf("%s doesn't exist\n", name);
+  }
+  else if (ni)
+    wd->fv->inodes.show(ni);
+  else
+    printf("%s doesn't exist\n", name);
 }
 
 void doMkDir(Arg *a)
@@ -355,59 +398,63 @@ void doPwd(Arg *a)
 
 } // end of PWD
 
-
-char* processPath (byte *path, uint &in)
+char *processPath(byte *path, uint &in)
 {
   Directory *current;
   char *c = (char *)path, *result;
   uint inode;
-  if (c[0] == '/') {
+  if (c[0] == '/')
+  {
     c = &(c[1]);
-    in = fv->root->nInode; // Inode number of the root directory
-    current = new Directory (fv, fv->root->nInode, 0); // Creates the root directory 
+    in = fv->root->nInode;                            // Inode number of the root directory
+    current = new Directory(fv, fv->root->nInode, 0); // Creates the root directory
   }
-  else {
+  else
+  {
     in = wd->nInode;
-    current = new Directory (fv, wd->nInode, 0);
+    current = new Directory(fv, wd->nInode, 0);
   }
   result = c;
-  strtok (c, "/");
-  while (true) {
+  strtok(c, "/");
+  while (true)
+  {
     result = c;
-    inode = current->iNumberOf ((byte *)c);
-    if (inode == 0) {
+    inode = current->iNumberOf((byte *)c);
+    if (inode == 0)
+    {
       if (in > 0)
-	return result;
+        return result;
       in = 0;
       return 0;
     }
     delete current;
-    current = new Directory (fv, inode, 0);
-    c = strtok (0, "/");
+    current = new Directory(fv, inode, 0);
+    c = strtok(0, "/");
     if (c == 0)
       break;
     in = inode;
   }
   delete current;
   return result;
-  } 
+}
 
 void doMv(Arg *a)
 {
-  uint inode = wd->iNumberOf ((byte *) a[1].s);
-  if (wd->fv->inodes.getType (inode) == iTypeDirectory) {
-  uint srcn, dstn;
-  char *src = processPath ((byte *) a[0].s, srcn);
-  char *dst = processPath ((byte *) a[1].s, dstn);
-  if (srcn == 0 || dstn == 0)
-    return;
-  uint result = fv->move(dstn, (byte *)dst, 0, srcn, (byte *)src);
-  printf("result %d\n", result);
-  } else 
-    wd->renamefile ((byte *) a[0].s, (byte *) a[1].s);
-  
-} // end of move
+  uint inode = wd->iNumberOf((byte *)a[1].s);
+  if (wd->fv->inodes.getType(inode) == iTypeDirectory)
+  {
+    uint srcn, dstn;
+    char *src = processPath((byte *)a[0].s, srcn);
+    char *dst = processPath((byte *)a[1].s, dstn);
+    if (srcn == 0 || dstn == 0)
+      return;
+    uint result = fv->move(dstn, (byte *)dst, 0, srcn, (byte *)src);
+    printf("result %d\n", result);
+  }
+  else
+    wd->renamefile((byte *)a[0].s, (byte *)a[1].s);
 
+} // end of move
 
 void doMountDF(Arg *a) // arg a ignored
 {
@@ -450,6 +497,7 @@ public:
     {"inode", "s", "v", doInode},
     {"ls", "", "v", doLsLong},
     {"ls", "s", "v", doLsLong},
+    {"ls", "ss", "v", lsRecursive},
     {"lslong", "", "v", doLsLong},
     {"mkdir", "s", "v", doMkDir},
     {"mkdisk", "s", "", doMakeDisk},
