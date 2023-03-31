@@ -160,6 +160,8 @@ public:
   uint deleteFile(byte * leafnm, uint releaseFlag);
   uint renamefile(byte * sourceile, byte * desfile); 
   uint moveFile(uint pn, byte *srcleaf, byte *dstleaf);
+  uint customCreateFile(byte *leafnm, uint in, uint dirFlag);
+  uint customDeleteFile(byte *leafnm, uint freeInodeFlag);
   std::vector<std::string> getEntries();
   bool isEmpty(int &counter);
   uint ls();
