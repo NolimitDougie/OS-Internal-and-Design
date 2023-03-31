@@ -1,5 +1,5 @@
-Script started on 2023-03-31 17:10:13+00:00 [TERM="xterm-256color" TTY="/dev/pts/3" COLUMNS="80" LINES="24"]
-[?2004h]0;dougie@housestark: ~/OS-Internal-and-Design/P0-2020-Fall[01;32mdougie@housestark[00m:[01;34m~/OS-Internal-and-Design/P0-2020-Fall[00m$ r[Kgdb P0
+Script started on 2023-03-31 17:33:46+00:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="80" LINES="24"]
+[?2004h]0;dougie@housestark: ~/OS-Internal-and-Design/P0-2020-Fall[01;32mdougie@housestark[00m:[01;34m~/OS-Internal-and-Design/P0-2020-Fall[00m$ gbd [K[K[Kdb P0
 [?2004l[35;1mGNU gdb (Ubuntu 12.1-0ubuntu1~22.04) 12.1[m
 Copyright (C) 2022 Free Software Foundation, Inc.
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
@@ -16,10 +16,10 @@ Find the GDB manual and other documentation resources online at:
 For help, type "help".
 Type "apropos word" to search for commands related to "word"...
 Reading symbols from [32mP0[m...
-[?2004h(gdb) break shell.cpp:616
-[?2004lBreakpoint 1 at [34m0x8f04[m: file [32mshell.cpp[m, line 616.
 [?2004h(gdb) break shell.cpp:122
-[?2004lBreakpoint 2 at [34m0x7360[m: file [32mshell.cpp[m, line 122.
+[?2004lBreakpoint 1 at [34m0x7360[m: file [32mshell.cpp[m, line 122.
+[?2004h(gdb) break shell.cpp:616
+[?2004lBreakpoint 2 at [34m0x8f04[m: file [32mshell.cpp[m, line 616.
 [?2004h(gdb) run
 [?2004lStarting program: [32m/home/dougie/OS-Internal-and-Design/P0-2020-Fall/P0[m 
 [Thread debugging using libthread_db enabled]
@@ -53,10 +53,10 @@ Start with ! to invoke a Unix shell cmd
 sh33% mkfs D1
 cmd [mkfs D1]
 
-Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cpp[m:122
+Breakpoint 1, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cpp[m:122
 122	  SimDisk [31m*[msimDisk [31m=[m [01mmkSimDisk[m[31m(([mbyte [31m*)[ma[31m[[m[35m0[m[31m].[ms[31m);[m
-[?2004h[?2004l[?2004h(gdb) n[Ks
-[?2004l[33mmkSimDisk[m ([36mname[m=0xffffffffeb7d "D1") at [32mshell.cpp[m:59
+[?2004h[?2004l[?2004h(gdb) s
+[?2004l[33mmkSimDisk[m ([36mname[m=0xffffffffeb8d "D1") at [32mshell.cpp[m:59
 59	  SimDisk [31m*[msimDisk [31m=[m [01;34mnew[m [01mSimDisk[m[31m([mname[31m,[m [35m0[m[31m);[m
 [?2004h[?2004l[?2004h(gdb) n
 [?2004l60	  [01;34mif[m [31m([msimDisk[31m->[mnSectorsPerDisk [31m==[m [35m0[m[31m)[m
@@ -74,7 +74,7 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004h[?2004l[?2004h(gdb) 
 [?2004lmake33fv() = à, Name == D1, Disk# == 2
 129	  [01;34mif[m [31m([mfv[31m)[m
-[?2004h[?2004l[?2004h(gdb) pri[K[K[Kn
+[?2004h[?2004l[?2004h(gdb) 
 [?2004l131	    wd [31m=[m [01;34mnew[m [01mDirectory[m[31m([mfv[31m,[m [35m1[m[31m,[m [35m0[m[31m);[m
 [?2004h[?2004l[?2004h(gdb) 
 [?2004l132	    cwdVNIN [31m=[m [01mmkVNIN[m[31m([msimDisk[31m->[msimDiskNum[31m,[m [35m1[m[31m);[m
@@ -99,7 +99,7 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004h[?2004l[?2004h(gdb) 
 [?2004lsh33% wrdisk D1 1 hi
 689	    [01mprintf[m[31m([m[31m"cmd [%s][m[35m\n[m[31m"[m[31m,[m buf[31m);[m [36m// just print out what we got as-is[m
-[?2004h[?2004l[?2004h(gdb) n
+[?2004h[?2004l[?2004h(gdb) 
 [?2004lcmd [wrdisk D1 1 hi]
 690	    [01;34mif[m [31m([mbuf[31m[[m[35m0[m[31m][m [31m==[m [35m0[m[31m)[m
 [?2004h[?2004l[?2004h(gdb) 
@@ -122,8 +122,17 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004l853	      [01msetArgsGiven[m[31m([mbuf[31m,[m arg[31m,[m types[31m,[m nArgsMax[31m);[m
 [?2004h[?2004l[?2004h(gdb) 
 [?2004l854	      [32mint[m k [31m=[m [01mfindCmd[m[31m([mbuf[31m,[m types[31m);[m
-[?2004h[?2004l[?2004h(gdb) s
-[?2004l[33mfindCmd[m ([36mname[m=0xffffffffeb78 "wrdisk", [36margtypes[m=0xaaaaaaabd348 <types> "sus") at [32mshell.cpp[m:600
+[?2004h[?2004l[?2004h(gdb) print buf
+[?2004l$1 = "wrdisk\000D1\000\061\000hi\000\000p\363\377\367\377\377\000\000\210\353\377\367\377\377\000\000\250\204\376\367\377\377\000\000\003\060\003\060\003\060\003\060\003\060\003\060\003\060\003\060\017\360\017\360\017\360\017\360\017\360\017\360\017\360\017\360\000\f\000\000\000\000\f\000\000\f\000\000\000\000\f", '\000' <repeats 17 times>, "`\300\323\367\377\377\000\000x\374\301\367\377\377\000\000\060\354\377\377\377\377\000\000<\337\314\367\377\377\000\000\001\000\000\000\000\000\000\000\001\000\000\000\000\000\000\000\000\000\200\002\000\000\000\000\000\003\352\376B?\215\a\200\354\377\377\377\377\000\000x\316\375\367\377\377\000\000\001\000\000\000\000\000\000\000`\333\377\367\377\377\000\000"...
+[?2004h(gdb) print types
+[?2004l$2 = "sus\000\000\000\000\000\000\000"
+[?2004h(gdb) print arg
+[?2004l$3 = {{[36ms[m = [34m0xffffffffeb8f[m "D1", [36mu[m = 0}, {[36ms[m = [34m0xffffffffeb92[m "1", [36mu[m = 1}, {
+    [36ms[m = [34m0xffffffffeb94[m "hi", [36mu[m = 0}, {[36ms[m = [34m0x0[m, [36mu[m = 0}, {[36ms[m = [34m0x0[m, [36mu[m = 0}, {
+    [36ms[m = [34m0x0[m, [36mu[m = 0}, {[36ms[m = [34m0x0[m, [36mu[m = 0}, {[36ms[m = [34m0x0[m, [36mu[m = 0}, {[36ms[m = [34m0x0[m, [36mu[m = 0}, {
+    [36ms[m = [34m0x0[m, [36mu[m = 0}}
+[?2004h(gdb) s
+[?2004l[33mfindCmd[m ([36mname[m=0xffffffffeb88 "wrdisk", [36margtypes[m=0xaaaaaaabd348 <types> "sus") at [32mshell.cpp[m:600
 600	  [01;34mfor[m [31m([muint i [31m=[m [35m0[m[31m;[m i [31m<[m ncmds[31m;[m i[31m++)[m
 [?2004h[?2004l[?2004h(gdb) n
 [?2004l602	    [01;34mif[m [31m([m[01mstrcmp[m[31m([mname[31m,[m cmdTable[31m[[mi[31m].[mcmdName[31m)[m [31m==[m [35m0[m [31m&&[m [01mstrcmp[m[31m([margtypes[31m,[m cmdTable[31m[[mi[31m].[margsRequired[31m)[m [31m==[m [35m0[m[31m)[m
@@ -226,7 +235,7 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004h[?2004l[?2004h(gdb) 
 [?2004l[33mmain[m () at [32mshell.cpp[m:855
 855	      [32mchar[m [31m*[mcopybuf [31m=[m buf[31m;[m
-[?2004h[?2004l[?2004h(gdb) n
+[?2004h[?2004l[?2004h(gdb) 
 [?2004l856	      [01;34mif[m [31m([mk [31m>=[m [35m0[m[31m)[m
 [?2004h[?2004l[?2004h(gdb) 
 [?2004l858	        [01;34mif[m [31m([mbg[31m)[m
@@ -235,9 +244,9 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004h[?2004l[?2004h(gdb) s
 [?2004l[33minvokeCmd[m ([36mk[m=23, [36marg[m=0xaaaaaaabd358 <arg>) at [32mshell.cpp[m:534
 534	  uint ok [31m=[m [35m1[m[31m;[m
-[?2004h[?2004l[?2004h(gdb) n
-[?2004l535	  [01;34mif[m [31m([mcmdTable[31m[[mk[31m].[mglobalsNeeded[31m[[m[35m0[m[31m][m [31m==[m [31m'v'[m [31m&&[m cwdVNIN [31m==[m [35m0[m[31m)[m
 [?2004h[?2004l[?2004h(gdb) 
+[?2004l535	  [01;34mif[m [31m([mcmdTable[31m[[mk[31m].[mglobalsNeeded[31m[[m[35m0[m[31m][m [31m==[m [31m'v'[m [31m&&[m cwdVNIN [31m==[m [35m0[m[31m)[m
+[?2004h[?2004l[?2004h(gdb) n
 [?2004l540	  [01;34melse[m [01;34mif[m [31m([mcmdTable[31m[[mk[31m].[mglobalsNeeded[31m[[m[35m0[m[31m][m [31m==[m [31m'm'[m [31m&&[m mtab [31m==[m [35m0[m[31m)[m
 [?2004h[?2004l[?2004h(gdb) 
 [?2004l546	  [32mchar[m [31m*[mreq [31m=[m cmdTable[31m[[mk[31m].[margsRequired[31m;[m
@@ -270,7 +279,7 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004h[?2004l[?2004h(gdb) 
 [?2004lwrite433disk(1, hi...) == 512 to Disk D1
 563	[31m}[m
-[?2004h[?2004l[?2004h(gdb) n
+[?2004h[?2004l[?2004h(gdb) 
 [?2004l[33mmain[m () at [32mshell.cpp[m:869
 869	      [01;34mif[m [31m([mredir[31m)[m
 [?2004h[?2004l[?2004h(gdb) 
@@ -323,10 +332,10 @@ Breakpoint 2, [33mdoMakeFV[m ([36ma[m=0xaaaaaaabd358 <arg>) at [32mshell.cp
 [?2004h[?2004l[?2004h(gdb) q
 [?2004l[?2004hA debugging session is active.
 
-	Inferior 1 [process 3024] will be killed.
+	Inferior 1 [process 2659] will be killed.
 
 Quit anyway? (y or n) y
 [?2004l[?2004h]0;dougie@housestark: ~/OS-Internal-and-Design/P0-2020-Fall[01;32mdougie@housestark[00m:[01;34m~/OS-Internal-and-Design/P0-2020-Fall[00m$ exit 0
 [?2004lexit
 
-Script done on 2023-03-31 17:18:02+00:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2023-03-31 17:37:12+00:00 [COMMAND_EXIT_CODE="0"]
