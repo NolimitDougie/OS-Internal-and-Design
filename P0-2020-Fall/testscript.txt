@@ -1,19 +1,27 @@
 # stdTestScriptP2.txt
 
 mkfs D1
-
 cp @answers.txt test.txt
-
 mkdir home
-
+inode 1
+inode 2
+inode home
 mv test.txt home
-
 cd home
-
 mkdir Alpha
-
 cd /
-
-mkdir wolf 
+mkdir wolf
+ls 
+cp @answers.txt hello.txt
+mv hello.txt delta.txt
+mv delta.txt wolf
+cd wolf
+ls
+mkdir Omega
+mkdir Beta 
+cd /
+rm -r wolf
+ls -lR home
+quit
 
 
