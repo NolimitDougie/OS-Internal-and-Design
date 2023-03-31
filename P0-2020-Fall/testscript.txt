@@ -1,24 +1,19 @@
-# stdTestScriptP0.txt
+# stdTestScriptP2.txt
 
 mkfs D1
 
-ls
+cp @answers.txt test.txt
 
-!ls 
+mkdir home
 
-ls > test.txt 
+mv test.txt home
 
-!cat test.txt
+cd home
 
-!date 
+mkdir Alpha
 
-ls | !grep li
+cd /
 
-!ls | !grep fi
+mkdir wolf 
 
-ls | !head -n 4
-
-!(sleep 15;echo sleep done) &
-
-!echo after sleep
 
