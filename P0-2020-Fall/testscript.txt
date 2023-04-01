@@ -11,20 +11,18 @@ mv test.txt home
 cd home
 mkdir Alpha
 cd /
+cd /home/Alpha
 mkdir wolf
 ls 
 rm home 
-rm -r home
 cp @answers.txt hello.txt
 mv hello.txt delta.txt
 mv delta.txt wolf
 cd wolf
 ls
-mkdir Beta
-cd Beta
 cd /
-rm -r wolf
 ls -lR home
+rm -r home
 quit
 
 
