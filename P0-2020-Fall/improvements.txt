@@ -1,0 +1,20 @@
+Improvments -
+
+
+mv - For improvements in Directoy.cpp I created and adjusted some functions be able to implement mv in shell.cpp. I added a customCreateFile and customDeleteFile 
+function for some of the cases in mv 
+
+
+cd For improvements I implemented it so it can handle absolute path and get you to the right directory doing it that way or just. a regaular cd
+
+
+ls - For improvements I added the checks in doLSlong and also added a recursive ls with some flags so you can call ls a few diffrent ways 
+
+
+inode - I updated this function so you can call `inode 2` and still be able to call `inode dirname`
+
+
+rm  - I added checks to see if the directory is empty before deleting if not you wont be able to delete the directory. 
+I also added the recursive rm so you can have files in the directory to be remove a directory with running `rm -r `.
+
+
