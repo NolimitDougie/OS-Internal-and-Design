@@ -367,72 +367,7 @@ void doPwd(Arg *a)
 
 } // end of PWD
 
-void doChDir(Arg *a)
-{
-  char *path = (char *)a[0].s;
-  char *c = path;
-  c++;
-  Directory *prevwd = wd;
-  Directory *currentDir = prevwd->fv->root;
-
-  if (path[0] == '/' && path[1] == '\0')
-  {
-    wd = prevwd->fv->root;
-  }
-  else if (path[0] == '/')
-  {
-    int i = 0;
-    while (true)
-    {
-      if (c[i] == '/')
-      {
-        c[i] = '\0';
-        int inode = currentDir->iNumberOf((byte *)c);
-        if (inode)
-        {
-          currentDir = new Directory(prevwd->fv, inode, 0);
-        }
-        else
-        {
-          printf("Directory doesn't exist\n");
-          break;
-        }
-        c = c + i + 1;
-        i = 0;
-        continue;
-      }
-      else if (c[i] == '\0')
-      {
-        int inode = currentDir->iNumberOf((byte *)c);
-        if (inode)
-        {
-          currentDir = new Directory(prevwd->fv, inode, 0);
-          wd = currentDir;
-          doPwd(a);
-        }
-        break;
-      }
-      i++;
-    } // end of while loop
-  }
-  else
-  {
-    int inode = prevwd->iNumberOf((byte *)path);
-    if (inode)
-    {
-      currentDir = new Directory(prevwd->fv, inode, 0);
-      wd = currentDir;
-      doPwd(a);
-    }
-    else
-    {
-      printf("directory doesn't exist\n");
-    }
-  } // end of else block
-
-} // end of function
-
-uint findNumSlashes(char *path)
+uint numPathMarkers(char *path)
 {
   char *findSlashes;
   uint numSlashes = 0;
@@ -491,7 +426,7 @@ std::vector<std::string> getPathVec(char *path)
     remPathStr = "/" + remPathStr;
     updatePath(path, remPathStr);
   }
-  uint numSlashes = findNumSlashes(path);
+  uint numSlashes = numPathMarkers(path);
   for (uint i = 0; i < numSlashes; i++)
   {
     pathVec.push_back(strtok(path, "/"));
@@ -509,50 +444,50 @@ std::vector<std::string> getPathVec(char *path)
 
 std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, bool &exists)
 {
-  bool toRoot;
-  bool afterRoot = true;
-  Directory *startDir = wd;
+  bool curRoot;
+  bool leaveRoot = true;
+  Directory *currDir = wd;
   if (path[0] == '/')
   {
-    toRoot = true;
+    curRoot = true;
     if (path[1] == 0)
     {
-      afterRoot = false;
+      leaveRoot = false;
     }
     else if (path[1] == '/')
     {
-      afterRoot = false;
+      leaveRoot = false;
       for (long unsigned int i = 0; i < strlen(path); i++)
       {
         if (path[i] != '/')
         {
-          toRoot = false;
+          curRoot = false;
           break;
         }
         else
         {
-          toRoot = true;
+          curRoot = true;
         }
       }
     }
   }
-  if (toRoot)
+  if (curRoot)
   {
-    Directory *childDir = wd;
+    Directory *leafDir = wd;
     uint rootINode = 0;
     while (rootINode != 1)
     {
-      rootINode = childDir->iNumberOf((byte *)"..");
+      rootINode = leafDir->iNumberOf((byte *)"..");
       wd = new Directory(fv, rootINode, 0);
-      if (childDir != startDir)
+      if (leafDir != currDir)
       {
-        delete (childDir);
+        delete (leafDir);
       }
-      childDir = wd;
+      leafDir = wd;
     }
   }
   std::vector<std::string> pathVec;
-  if (afterRoot)
+  if (leaveRoot)
   {
     pathVec = getPathVec(path);
     uint inode = 0;
@@ -567,7 +502,7 @@ std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, b
         {
           Directory *tmp = wd;
           wd = new Directory(fv, inode, 0);
-          if (tmp != startDir)
+          if (tmp != currDir)
           {
             delete (tmp);
           }
@@ -596,7 +531,7 @@ std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, b
   return pathVec;
 }
 
-bool fileInPath(std::vector<std::string> pathVec, uint inode)
+bool pathFiles(std::vector<std::string> pathVec, uint inode)
 {
   Directory *dir = wd;
   uint pathinode;
@@ -623,9 +558,81 @@ bool fileInPath(std::vector<std::string> pathVec, uint inode)
   return false;
 }
 
+void doChDir(Arg * a)
+{
+  bool curRoot;
+  bool leaveRoot = true;
+  Directory* currDir = wd;
+  if (a[0].s[0] == '/') {
+    curRoot = true;
+    if (a[0].s[1] == 0) {
+      leaveRoot = false;
+    }
+    else if (a[0].s[1] == '/') {
+      leaveRoot = false;
+      for (long unsigned int i = 0; i < strlen(a[0].s); i++) {
+        if (a[0].s[i] != '/') {
+          curRoot = false;
+          break;
+        }
+        else {
+          curRoot = true;
+        }
+      }
+    }
+  }
+  if (curRoot) {
+    Directory* leafDir = wd;
+    uint rootINode = 0;
+    while (rootINode != 1) {
+      rootINode = leafDir->iNumberOf((byte *) "..");
+      wd = new Directory(fv, rootINode, 0);
+      if (leafDir != currDir) {
+        delete(leafDir);
+      }
+      leafDir = wd;
+    }
+  }
+  if (leaveRoot) {
+    std::vector<std::string> pathVec = getPathVec(a[0].s);
+    uint iNode = 0;
+    const char* pathEntry;
+    for (long unsigned int i = 0; i < pathVec.size(); i++) {
+      pathEntry = pathVec[i].c_str();
+      iNode = wd->iNumberOf((byte *) pathEntry);
+      if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory) {
+        Directory* tmp = wd;
+        wd = new Directory(fv, iNode, 0);
+        if (tmp != currDir) {
+          delete(tmp);
+        }
+      }
+      else {
+        if (wd != currDir) {
+          delete(wd);
+          wd = currDir;
+        }
+        break;
+      }
+    }
+    if (pathVec.size() == 0) {
+      if (wd != currDir) {
+        delete(wd);
+        wd = currDir;
+      }
+    }
+  }
+  if (wd != currDir) {
+    delete(currDir);
+  }
+  doPwd(a);
+}
+
+
+
 void doMv(Arg *a)
 {
-  Directory *startDir = wd;
+  Directory *currDir = wd;
   bool sourceInvalidPath = false;
   bool sourceIsFile = false;
   bool sourceExists = true;
@@ -642,7 +649,7 @@ void doMv(Arg *a)
   strcpy(destPath, a[1].s);
   std::vector<std::string> sourceVec = doMvPath(a[0].s, sourceInvalidPath, sourceIsFile, sourceExists);
   Directory *sourceDir = wd;
-  wd = startDir;
+  wd = currDir;
   if (sourceVec.size() == 0)
   {
     delete (destPath);
@@ -660,7 +667,7 @@ void doMv(Arg *a)
   }
   delete (destPath);
   Directory *destDir = wd;
-  wd = startDir;
+  wd = currDir;
   if (!sourceExists || sourceInvalidPath || destInvalidPath || (dstValid && destIsFile))
   {
     if (sourceDir != wd)
@@ -687,7 +694,7 @@ void doMv(Arg *a)
     else
     {
       flag = 1;
-      if (fileInPath(dstVec, inode))
+      if (pathFiles(dstVec, inode))
       {
         printf("Cannot move a directory into its own subdirectory.\n");
         return;
@@ -737,7 +744,7 @@ void doMv(Arg *a)
     else
     {
       flag = 1;
-      if (fileInPath(dstVec, inode))
+      if (pathFiles(dstVec, inode))
       {
         if (destDir != wd)
         {
