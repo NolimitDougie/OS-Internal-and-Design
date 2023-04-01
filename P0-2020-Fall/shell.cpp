@@ -333,39 +333,6 @@ void doMkDir(Arg *a)
   wd->createFile((byte *)a[0].s, wd->nInode);
 }
 
-void doChDir(Arg *a)
-{
-  char *c;
-  char *str = a[0].s;
-  Directory *prevwd;
-  uint inode;
-  if (str[0] == '/')
-  {
-    if (wd != fv->root)
-      delete wd;
-    wd = fv->root;
-    str = &(str[1]);
-  }
-  while ((c = strstr(str, "/")))
-  {
-    c = '\0';
-    if (inode = wd->iNumberOf((byte *)str))
-    {
-      prevwd = wd;
-      wd = new Directory(prevwd->fv, inode, 0);
-      if (prevwd != fv->root)
-        delete prevwd;
-    }
-    str = &(c[1]);
-  }
-  if (inode = wd->iNumberOf((byte *)str))
-  {
-    prevwd = wd;
-    wd = new Directory(prevwd->fv, inode, 0);
-    if (prevwd != fv->root)
-      delete prevwd;
-  }
-}
 
 void doPwd(Arg *a)
 {
@@ -397,6 +364,74 @@ void doPwd(Arg *a)
     printf("/\n");
 
 } // end of PWD
+
+void doChDir(Arg *a)
+{
+
+  char* path = (char*) a[0].s;
+  char* c = path;
+  c++;
+
+  Directory* prevwd = wd;
+  Directory* currentDir = prevwd->fv->root;
+
+  // Check if root was given
+  if(path[0] == '/' && path[1] == '\0'){
+    wd = prevwd->fv->root;
+
+  } else if (path[0] == '/'){
+    int i = 0;
+    while(true){
+      
+      if(c[i] == '/'){
+        c[i] = '\0';
+        int inode = currentDir->iNumberOf((byte*) c);
+        if(inode){
+          currentDir = new Directory(prevwd->fv, inode, 0);
+
+        } else {
+          printf("directory doesn't exist\n");
+          break;
+        }
+        c = c + i + 1;
+        i = 0;
+        continue;
+
+      } else if (c[i] == '\0') {
+        //reached end of path given
+        int inode = currentDir->iNumberOf((byte*) c);
+
+        if(inode){
+          currentDir = new Directory(prevwd->fv, inode, 0);
+          wd = currentDir;
+          doPwd(a);
+
+        } else {
+          
+          printf("Directory doesn't exist\n");
+        }
+        break;
+      }
+
+      i++;
+    } // end of while loop 
+   // eof if statement 
+  }  else {
+    int inode = prevwd->iNumberOf((byte*) path);
+
+    if(inode){
+      currentDir = new Directory(prevwd->fv, inode, 0);
+      wd = currentDir;
+      doPwd(a);
+    } 
+     else  {
+      printf("directory doesn't exist\n");
+    }
+
+  } // end of else block
+  
+} // end of function 
+ 
 
 uint findNumSlashes(char* path) {
   char* findSlashes;
@@ -499,7 +534,7 @@ std::vector<std::string> doMvPath(char * path, bool& invalidPath, bool& IsFile, 
     uint iNode = 0;
     const char* pathEntry;
     for (long unsigned int i = 0; i < pathVec.size(); i++) {
-      pathEntry = pathVec[i].c_str(); // https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
+      pathEntry = pathVec[i].c_str(); 
       iNode = wd->iNumberOf((byte *) pathEntry);
       if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory) {
         if (i != pathVec.size() - 1) {
@@ -534,7 +569,7 @@ bool fileInPath(std::vector<std::string> pathVec, uint iNode) {
   uint pathINode;
   const char* pathEntry;
   for (long unsigned int i = 0; i < pathVec.size(); i++) {
-    pathEntry = pathVec[i].c_str(); // https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
+    pathEntry = pathVec[i].c_str();
     pathINode = dir->iNumberOf((byte *) pathEntry);
     if (pathINode == iNode) {
       if (dir != wd) {
@@ -565,11 +600,8 @@ void doMv(Arg * a)
     printf("Cannot move '.' or '..'.\n");
     return;
   }
-
-
   char* destPath = new char[strlen(a[1].s)+1]; 
   strcpy(destPath, a[1].s);
-  // end citation
 
   std::vector<std::string> sourceVec = doMvPath(a[0].s, sourceInvalidPath, sourceIsFile, sourceExists);
   Directory* sourceDir = wd;
