@@ -154,20 +154,35 @@ void Directory::addLeafName(byte *newName, uint in)
 
 uint Directory::lsPrivate(uint in, uint printfFlag)
 {
-  uint nFiles = 0;
+uint nFiles = 0;
   Directory *d = new Directory(fv, in, 0);
-  for (byte *bp = 0; (bp = d->nextName()); nFiles++)
-  {
+  char * linkPath = "";
+  for (byte *bp = 0; (bp = d->nextName()); nFiles++) {
     uint in = iNumber(bp);
-    if (printfFlag)
-    {
-      byte c = (d->fv->inodes.getType(in) == iTypeDirectory ? 'd' : '-');
-      printf("%7d %crw-rw-rw-    1 yourName yourGroup %7d Jul 15 12:34 %s\n",
-             in, c, d->fv->inodes.getFileSize(in), bp);
+    if (printfFlag) {
+      byte c = (d->fv->inodes.getType(in) == iTypeDirectory? 'd' : '-');
+      if (d->fv->inodes.getType(in) == iTypeSoftLink) {
+        c = 'l';
+        uint bn = fv->inodes.getBlockNumber(in, 0);
+        byte *blockData = new byte[fv->superBlock.nBytesPerBlock];
+        fv->readBlock(bn, blockData);
+        if (blockData[1] == '.') {
+          blockData+=2;
+        }
+        linkPath = (char *) blockData;
+      }
+      if (d->fv->inodes.getType(in) != iTypeSoftLink) {
+        printf("%7d %crw-rw-rw-    1 yourName yourGroup %7d Jul 15 12:34 %s\n",
+        in, c, d->fv->inodes.getFileSize(in), bp);
+      }
+      else {
+        printf("%7d %crw-rw-rw-    1 yourName yourGroup %7d Jul 15 12:34 %s -> %s\n",
+        in, c, d->fv->inodes.getFileSize(in), bp, linkPath);
+      }
     }
   }
   delete d;
-  return nFiles - 2; // -2 because of "." and ".."
+  return nFiles - 2;		
 }
 
 uint Directory::ls()
@@ -232,7 +247,6 @@ uint Directory::moveFile(uint pn, byte *srcleaf, byte *dstleaf)
   }
   delete d; // which also does d->namesEnd()
   return in;
-  /// return TODO("Directory::moveFile");
 } // -eof- movefile
 
 uint Directory::renamefile(byte *sourcefile, byte *desfile)

@@ -103,7 +103,8 @@ public:
   uint getType(uint in);
   uint setType(uint in, uint value);
   uint show(uint in);
-
+  uint getLinkCount(uint in);
+  uint incLinkCount(uint in, int inc);
 
 private:
   uint * uintbuffer;		// inodes from one block
