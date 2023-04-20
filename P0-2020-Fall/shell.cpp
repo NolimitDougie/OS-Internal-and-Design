@@ -752,93 +752,112 @@ void doTouch(Arg *a)
   printf("inode: %d\n", in);
 }
 
-void doChDir(Arg *a)
+
+void doChDir(Arg * a)
 {
-  bool curRoot;
-  bool leaveRoot = true;
-  Directory *currDir = wd;
-  if (a[0].s[0] == '/')
-  {
-    curRoot = true;
-    if (a[0].s[1] == 0)
-    {
-      leaveRoot = false;
+  bool toRoot;
+  bool afterRoot = true;
+  Directory* startDir = new Directory(fv, wd->nInode, 0);
+  if (a[0].s[0] == '/') {
+    toRoot = true;
+    if (a[0].s[1] == 0) {
+      afterRoot = false;
+      printf("Changing directory to root.\n");
     }
-    else if (a[0].s[1] == '/')
-    {
-      leaveRoot = false;
-      for (long unsigned int i = 0; i < strlen(a[0].s); i++)
-      {
-        if (a[0].s[i] != '/')
-        {
-          curRoot = false;
+    else if (a[0].s[1] == '/') {
+      afterRoot = false;
+      for (long unsigned int i = 0; i < strlen(a[0].s); i++) {
+        if (a[0].s[i] != '/') {
+          toRoot = false;
+          printf("Changing directory failed.\n");
           break;
         }
-        else
-        {
-          curRoot = true;
+        else {
+          toRoot = true;
         }
       }
-    }
-  }
-  if (curRoot)
-  {
-    Directory *leafDir = wd;
-    uint rootINode = 0;
-    while (rootINode != 1)
-    {
-      rootINode = leafDir->iNumberOf((byte *)"..");
-      wd = new Directory(fv, rootINode, 0);
-      if (leafDir != currDir)
-      {
-        delete (leafDir);
+      if (toRoot) {
+        printf("Changing directory to root.\n");
       }
-      leafDir = wd;
     }
   }
-  if (leaveRoot)
-  {
+  if (toRoot) {
+    Directory* childDir = wd;
+    uint rootINode = 0;
+    while (rootINode != 1) {
+      rootINode = childDir->iNumberOf((byte *) "..");
+      wd = new Directory(fv, rootINode, 0);
+      if (childDir != startDir) {
+        delete(childDir);
+      }
+      childDir = wd;
+    }
+  }
+  if (afterRoot) {
     std::vector<std::string> pathVec = getPathVec(a[0].s);
     uint iNode = 0;
-    const char *pathEntry;
-    for (long unsigned int i = 0; i < pathVec.size(); i++)
-    {
-      pathEntry = pathVec[i].c_str();
-      iNode = wd->iNumberOf((byte *)pathEntry);
-      if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory)
-      {
-        Directory *tmp = wd;
+    const char* pathEntry;
+    for (long unsigned int i = 0; i < pathVec.size(); i++) {
+      pathEntry = pathVec[i].c_str(); 
+      iNode = wd->iNumberOf((byte *) pathEntry);
+      if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory) {
+        Directory* tmp = wd;
         wd = new Directory(fv, iNode, 0);
-        if (tmp != currDir)
-        {
-          delete (tmp);
+        if (tmp != startDir) {
+          delete(tmp);
         }
       }
-      else
-      {
-        if (wd != currDir)
-        {
-          delete (wd);
-          wd = currDir;
+      else if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeSoftLink) {
+        uint bn = fv->inodes.getBlockNumber(iNode, 0);
+        byte *blockData = new byte[fv->superBlock.nBytesPerBlock];
+        fv->readBlock(bn, blockData);
+        if (blockData[1] == '.') {
+          blockData+=2;
+        }
+        std::string pathStr = (char *) blockData;
+        uint type = getLinkType(pathStr);
+        if (type == iTypeDirectory) {
+          bool success = successiveCD((char *) blockData);
+          if (!success) {
+            printf("Changing directory failed.\n");
+            if (wd != startDir) {
+              delete(wd);
+              wd = startDir;
+            }
+          }
+        }
+        else {
+          printf("Changing directory failed.\n");
+          if (wd != startDir) {
+            delete(wd);// here
+            wd = startDir;
+          }
+        }
+      }
+      else {
+        printf("Changing directory failed.\n");
+        if (wd != startDir) {
+          delete(wd);
+          wd = startDir;
         }
         break;
       }
     }
-    if (pathVec.size() == 0)
-    {
-      if (wd != currDir)
-      {
-        delete (wd);
-        wd = currDir;
+    if (pathVec.size() == 0) {
+      printf("Changing directory failed.\n");
+      if (wd != startDir) {
+        delete(wd);
+        wd = startDir;
       }
     }
   }
-  if (wd != currDir)
-  {
-    delete (currDir);
+  if (wd != startDir) {
+    delete(startDir);
   }
+  printf("Current working directory: ");
   doPwd(a);
 }
+
 
 bool fileInPath(std::vector<std::string> pathVec, uint iNode)
 {
@@ -847,7 +866,7 @@ bool fileInPath(std::vector<std::string> pathVec, uint iNode)
   const char *pathEntry;
   for (long unsigned int i = 0; i < pathVec.size(); i++)
   {
-    pathEntry = pathVec[i].c_str(); // https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
+    pathEntry = pathVec[i].c_str(); 
     pathINode = dir->iNumberOf((byte *)pathEntry);
     if (pathINode == iNode)
     {
@@ -867,155 +886,161 @@ bool fileInPath(std::vector<std::string> pathVec, uint iNode)
   return false;
 }
 
-void doMv(Arg *a)
+void doMv(Arg * a)
 {
-  Directory *currDir = wd;
+  Directory * startDir = new Directory(fv, wd->nInode, 0);
   bool sourceInvalidPath = false;
   bool sourceIsFile = false;
   bool sourceExists = true;
   bool destInvalidPath = false;
   bool destIsFile = false;
-  bool dstValid = true;
+  bool destExists = true;
 
-  if (a[0].s[0] == '.')
-  {
+  if (a[0].s[0] == '.') {
     printf("Cannot move '.' or '..'.\n");
     return;
   }
-  char *destPath = new char[strlen(a[1].s) + 1];
+
+  char* destPath = new char[strlen(a[1].s)+1]; // allocate for string and ending \0
   strcpy(destPath, a[1].s);
+  // end citation
+
   std::vector<std::string> sourceVec = doMvPath(a[0].s, sourceInvalidPath, sourceIsFile, sourceExists);
-  Directory *sourceDir = wd;
-  wd = currDir;
-  if (sourceVec.size() == 0)
-  {
-    delete (destPath);
-    if (sourceDir != wd)
-    {
-      delete (sourceDir);
+  Directory* sourceDir = new Directory(fv, wd->nInode, 0);
+  delete(wd);
+  wd = new Directory(fv, startDir->nInode, 0);
+  if (sourceVec.size() == 0) {
+    delete(destPath);
+    if (sourceDir != wd) {
+      delete(sourceDir);
     }
     printf("Cannot move or rename root.\n");
     return;
   }
-  std::vector<std::string> dstVec = doMvPath(destPath, destInvalidPath, destIsFile, dstValid);
-  if (dstVec.size() == 0)
-  {
-    dstVec.push_back(".");
+  std::vector<std::string> destVec = doMvPath(destPath, destInvalidPath, destIsFile, destExists);
+  if (destVec.size() == 0) {
+    destVec.push_back(".");
   }
-  delete (destPath);
-  Directory *destDir = wd;
-  wd = currDir;
-  if (!sourceExists || sourceInvalidPath || destInvalidPath || (dstValid && destIsFile))
-  {
-    if (sourceDir != wd)
-    {
-      delete (sourceDir);
+  delete(destPath);
+  Directory* destDir = new Directory(fv, wd->nInode, 0);
+  delete(wd);
+  wd = new Directory(fv, startDir->nInode, 0);
+
+  if (!sourceExists || sourceInvalidPath || destInvalidPath || (destExists && destIsFile)) {
+    if (sourceDir != wd) {
+      delete(sourceDir);
     }
-    if (destDir != wd)
-    {
-      delete (destDir);
+    if (destDir != wd) {
+      delete(destDir);
     }
     printf("Move/Rename failed.\n");
     return;
   }
-  else if (!dstValid)
-  {
+  else if (!destExists) {
     uint flag;
-    const char *sourceFile = sourceVec[sourceVec.size() - 1].c_str();
-    const char *destName = dstVec[dstVec.size() - 1].c_str();
-    uint inode = sourceDir->iNumberOf((byte *)sourceFile);
-    if (sourceIsFile)
-    {
+    const char* sourceFile = sourceVec[sourceVec.size() - 1].c_str();
+    const char* destName = destVec[destVec.size() - 1].c_str();
+    uint iNode = sourceDir->iNumberOf((byte *) sourceFile);
+    uint sourceType = sourceDir->fv->inodes.getType(iNode);
+    if (sourceIsFile || sourceType == iTypeSoftLink) {
       flag = 0;
     }
-    else
-    {
+    else {
       flag = 1;
-      if (fileInPath(dstVec, inode))
-      {
+      if (fileInPath(destVec, iNode)) {
         printf("Cannot move a directory into its own subdirectory.\n");
         return;
       }
     }
-    sourceDir->deleteFile((byte *)sourceFile, 0);
-    destDir->customCreateFile((byte *)destName, inode, flag);
-    if (flag == 1)
-    {
-      Directory *newDir = new Directory(fv, inode, 0);
-      newDir->customDeleteFile((byte *)"..", 0);
-      uint destINode = destDir->iNumberOf((byte *)".");
-      newDir->customCreateFile((byte *)"..", destINode, flag);
-      if (newDir != wd)
-      {
-        delete (newDir);
+    sourceDir->deleteFile((byte *) sourceFile, 0);
+    destDir->customCreateFile((byte *) destName, iNode, flag);
+    if (sourceType == iTypeSoftLink) {
+      destDir->fv->inodes.setType(iNode, iTypeSoftLink);
+    }
+    if (flag == 1) {
+      Directory* newDir = new Directory(fv, iNode, 0);
+      newDir->customDeleteFile((byte *) "..", 0);
+      uint destINode = destDir->iNumberOf((byte *) ".");
+      newDir->customCreateFile((byte *) "..", destINode, flag);
+      if (newDir != wd) {
+        delete(newDir);
       }
     }
     printf("Renamed successfully.\n");
   }
-  else if (dstValid)
-  {
+  else if (destExists) {
     uint flag;
-    const char *sourceFile = sourceVec[sourceVec.size() - 1].c_str();
-    const char *destName = dstVec[dstVec.size() - 1].c_str();
-    uint inode = sourceDir->iNumberOf((byte *)sourceFile);
-    uint destINode = destDir->iNumberOf((byte *)destName);
-    Directory *tmp = destDir;
-    destDir = new Directory(fv, destINode, 0);
-    if (tmp != wd)
-    {
-      delete (tmp);
+    const char* sourceFile = sourceVec[sourceVec.size() - 1].c_str();
+    const char* destName = destVec[destVec.size() - 1].c_str();
+    uint iNode = sourceDir->iNumberOf((byte *) sourceFile);
+    uint destINode = destDir->iNumberOf((byte *) destName);
+    if (destDir->fv->inodes.getType(destINode) == iTypeDirectory) {
+      Directory* tmp = destDir;
+      destDir = new Directory(fv, destINode, 0);
+      if (tmp != wd) {
+        delete(tmp);
+      }
+      delete(startDir);
     }
-    if (destDir->iNumberOf((byte *)sourceFile) != 0)
-    {
-      if (destDir != wd)
-      {
-        delete (destDir);
+    else if (destDir->fv->inodes.getType(destINode) == iTypeSoftLink) {
+      uint bn = fv->inodes.getBlockNumber(destINode, 0);
+      byte *blockData = new byte[fv->superBlock.nBytesPerBlock];
+      fv->readBlock(bn, blockData);
+      if (blockData[1] == '.') {
+        blockData+=2;
+      }
+      bool success = successiveCD((char*) blockData);
+      destDir = wd;
+      wd = startDir;
+      if (!success) {
+        printf("Move failed.\n");
+        return;
+      }
+    }
+    if (destDir->iNumberOf((byte *) sourceFile) != 0) {
+      if (destDir != wd) {
+        delete(destDir);
       }
       printf("File/Directory already exists.\n");
-      return;
+      return;  
     }
-    if (sourceIsFile)
-    {
+    uint sourceType = sourceDir->fv->inodes.getType(iNode);
+    if (sourceIsFile || sourceType == iTypeSoftLink) {
       flag = 0;
     }
-    else
-    {
+    else {
       flag = 1;
-      if (fileInPath(dstVec, inode))
-      {
-        if (destDir != wd)
-        {
-          delete (destDir);
+      if (fileInPath(destVec, iNode)) {
+        if (destDir != wd) {
+          delete(destDir);
         }
         printf("Cannot move a directory into its own subdirectory.\n");
         return;
       }
     }
-    sourceDir->deleteFile((byte *)sourceFile, 0);
-    destDir->customCreateFile((byte *)sourceFile, inode, flag);
-    if (flag == 1)
-    {
-      Directory *newDir = new Directory(fv, inode, 0);
-      newDir->customDeleteFile((byte *)"..", 0);
-      newDir->customCreateFile((byte *)"..", destINode, flag);
-      if (newDir != wd)
-      {
-        delete (newDir);
+    sourceDir->deleteFile((byte *) sourceFile, 0);
+    destDir->customCreateFile((byte *) sourceFile, iNode, flag);
+    if (sourceType == iTypeSoftLink) {
+      destDir->fv->inodes.setType(iNode, iTypeSoftLink);
+    }
+    if (flag == 1) {
+      Directory* newDir = new Directory(fv, iNode, 0);
+      newDir->customDeleteFile((byte *) "..", 0);
+      newDir->customCreateFile((byte *) "..", destINode, flag);
+      if (newDir != wd) {
+        delete(newDir);
       }
     }
     printf("Moved successfully.\n");
   }
 
-  if (sourceDir != wd)
-  {
-    delete (sourceDir);
+  if (sourceDir != wd) {
+    delete(sourceDir);
   }
-  if (destDir != wd)
-  {
-    delete (destDir);
+  if (destDir != wd) {
+    delete(destDir);
   }
 }
-
 void doHardLink(Arg *a)
 {
   Directory *startDir = new Directory(fv, wd->nInode, 0);
@@ -1149,6 +1174,7 @@ void doHardLink(Arg *a)
 
 void doHardLinkCurDir(Arg *a)
 {
+  
   a[1].s = ".";
   doHardLink(a);
 }
@@ -1167,8 +1193,6 @@ void doSoftLink(Arg *a)
   bool destIsFile = false;
   bool destExists = true;
 
-  // https://stackoverflow.com/questions/16515582/how-to-perform-a-deep-copy-of-a-char and
-  // https://stackoverflow.com/questions/481673/make-a-copy-of-a-char
   char *destPath = new char[strlen(a[2].s) + 1]; // allocate for string and ending \0
   strcpy(destPath, a[2].s);
   // end citation

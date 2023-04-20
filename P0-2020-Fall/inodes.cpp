@@ -165,29 +165,53 @@ uint Inodes::incLinkCount(uint in, int inc)
 
 uint Inodes::setSingleIndirect(uint *single, uint nu, uint bn)
 {
-  // fv->readBlock(nu, single);
-  // // Make change here
-  // uint *blockData = (uint *)new byte[fv->superBlock.nBytesPerBlock];
-  // fv->readBlock(bn, blockData);
-  // uint * tmpPos = (uint *)blockData[nu];
-  // fv->writeBlock(bn, tmpPos);
-  // fv->writeBlock(nu, single);
 
-  // if (*single == 0)
-  // {
-  // fv->readBlock(nu, single);
-  // byte *blockData = new byte[fv->superBlock.nBytesPerBlock];
-  // fv->readBlock(bn, blockData);
-  // fv->writeBlock(nu, single);
-  //   return 1;
-  // }
-  // else
-    return 0;
+  if (*single == 0)
+  {
+    uint *blockData = (uint *)new byte[fv->superBlock.nBytesPerBlock];
+    fv->readBlock(*single, blockData);
+    uint *tmpPos = (uint *)blockData;
+    blockData[nu] = bn;
+    fv->writeBlock(*single, blockData);
+    return 1;
+  }
+  uint *blockData = (uint *)new byte[fv->superBlock.nBytesPerBlock];
+  fv->readBlock(*single, blockData);
+  uint *tmpPos = (uint *)blockData;
+  blockData[nu] = bn;
+
+  fv->writeBlock(*single, blockData);
+
+  return 0;
 }
 
 uint Inodes::setDoubleIndirect(uint *duble, uint nu, uint bn)
 {
-  return TODO("Inodes::setDoubleIndirect");
+
+  if (*duble == 0)
+  {
+    uint *blockData = (uint *)new byte[fv->superBlock.nBytesPerBlock];
+    fv->readBlock(*duble, blockData);
+    uint *tmpPos = (uint *)blockData;
+    uint blocknum = fv->superBlock.nBytesPerBlock / sizeof(uint);
+    uint tmpPos1 = tmpPos[nu / blocknum];
+
+    if (setSingleIndirect(&tmpPos1, nu % blocknum, bn))
+    {
+
+      blockData[nu / blocknum] = tmpPos1;
+      fv->writeBlock(*duble, blockData);
+    }
+    return 1;
+  }
+
+  uint *blockData = (uint *)new byte[fv->superBlock.nBytesPerBlock];
+  fv->readBlock(*duble, blockData);
+  uint *tmpPos = (uint *)blockData;
+  blockData[nu] = bn;
+  fv->writeBlock(*duble, blockData);
+
+  return 0;
 }
 
 uint Inodes::setTripleIndirect(uint *triple, uint nu, uint bn)
@@ -258,7 +282,24 @@ uint Inodes::getBlockNumberSingleIndirect(uint bn, uint nth)
 
 uint Inodes::getBlockNumberDoubleIndirect(uint bn, uint nth)
 {
-  return TODO("Inodes::getBlockNumberDoubleIndirect");
+  uint wdBlkSize = fv->superBlock.nBytesPerBlock;
+  uint *blkSize = (uint *)new byte[wdBlkSize];
+
+  fv->readBlock(bn, blkSize);
+
+  uint *tmp = (uint *)blkSize;
+  uint blocknum = fv->superBlock.nBytesPerBlock / sizeof(uint);
+  uint tmpPos1 = tmp[nth / blocknum];
+
+  if (getBlockNumberSingleIndirect(tmpPos1, nth % blocknum))
+  {
+    blkSize[nth / blocknum] = tmpPos1;
+  }
+
+  uint tmpEntry = tmp[tmpPos1];
+
+  delete blkSize;
+  return tmpEntry;
 }
 
 uint Inodes::getBlockNumberTripleIndirect(uint bn, uint nth)
