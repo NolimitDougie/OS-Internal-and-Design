@@ -190,6 +190,14 @@ uint Directory::ls()
   return lsPrivate(nInode, 1); // 1 ==> printf it
 }
 
+uint Directory::lsInt(uint in)
+{
+  return lsPrivate(in, 0);
+}
+
+
+
+
 uint Directory::createFile(byte *leafnm, uint dirFlag)
 {
   uint in = iNumberOf(leafnm);

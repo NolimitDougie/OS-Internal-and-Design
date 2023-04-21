@@ -166,6 +166,7 @@ public:
   std::vector<std::string> getEntries();
   bool isEmpty(int &counter);
   uint ls();
+  uint lsInt(uint in);
 
   FileVolume * fv;
 

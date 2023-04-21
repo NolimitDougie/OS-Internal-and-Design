@@ -634,38 +634,62 @@ std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, b
   return pathVec;
 }
 
-void doRm(Arg *a)
+void doRm(Arg * a)
 {
-  char *dirName = (char *)a[0].s;
-  byte *tmp = (byte *)dirName;
-  uint inode = wd->iNumberOf(tmp);
-  if (inode == 0)
-  {
+  Directory * startDir = new Directory(fv, wd->nInode, 0);
+  bool tmp;
+
+  std::vector<std::string> pathVec = doMvPath(a[0].s, tmp, tmp, tmp);
+  Directory* remDirParent = wd;
+  wd = startDir;
+
+  const char* deleteEntity = pathVec[pathVec.size() - 1].c_str();
+
+  uint in = remDirParent->iNumberOf((byte *) deleteEntity);
+
+  if (in == 0) {
     printf("File/Directory not found.\n");
+    delete(remDirParent);
     return;
   }
-  int numContents = 0;
-  Directory *dir = new Directory(fv, inode, 0);
-
-  bool remove = dir->isEmpty(numContents);
-
-  if (wd->fv->inodes.getType(inode) == iTypeDirectory && remove)
-  {
-    wd->deleteFile(tmp, 1);
-    printf("Successfully removed directory '%s' with inode %d and %d entries.\n", a[0].s, inode, numContents);
-    return;
+  uint numContents = 0;
+  if (remDirParent->fv->inodes.getType(in) == iTypeDirectory) {
+    numContents = wd->lsInt(in);
   }
-  else if (wd->fv->inodes.getType(inode) == iTypeDirectory && !remove)
-  {
-    printf("Unable to remove directory '%s' with inode %d and %d entries.\n", a[0].s, inode, numContents);
-    return;
+  if (remDirParent->fv->inodes.getType(in) == iTypeDirectory && numContents == 0) {
+    in = remDirParent->deleteFile((byte *) deleteEntity, 1);
+    printf("Successfully removed directory '%s' with inode %d and %d entries.\n", deleteEntity, in, numContents);
   }
-  else if (wd->fv->inodes.getType(inode) == iTypeOrdinary)
-  {
-    inode = wd->deleteFile((byte *)a[0].s, 1);
-    printf("Successfully removed file '%s' with inode %d.\n", a[0].s, inode);
-    return;
+  else if (remDirParent->fv->inodes.getType(in) == iTypeDirectory && numContents != 0) {
+    printf("Unable to remove directory '%s' with inode %d and %d entries.\n", deleteEntity, in, numContents);
   }
+  else if (remDirParent->fv->inodes.getType(in) == iTypeOrdinary) {
+    int numLinks = fv->inodes.getLinkCount(in);
+    int flag;
+    if (numLinks == 0) {
+      flag = 1;
+    }
+    else if (numLinks > 0) {
+      flag = 0;
+    }
+    in = remDirParent->deleteFile((byte *) deleteEntity, flag);
+    fv->inodes.incLinkCount(in, -1);
+    printf("Successfully removed file '%s' with inode %d.\n", deleteEntity, in);
+  }
+  else if (remDirParent->fv->inodes.getType(in) == iTypeSoftLink) {
+    int numLinks = fv->inodes.getLinkCount(in);
+    int flag;
+    if (numLinks == 0) {
+      flag = 1;
+    }
+    else if (numLinks > 0) {
+      flag = 0;
+    }
+    in = remDirParent->deleteFile((byte *) deleteEntity, flag);
+    fv->inodes.incLinkCount(in, -1);
+    printf("Successfully removed symbolic link '%s' with inode %d.\n", deleteEntity, in);
+  }
+  delete(remDirParent);
 }
 
 void dorecursiveHelper(Directory *tmp)
