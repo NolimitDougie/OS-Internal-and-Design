@@ -976,7 +976,7 @@ void doMv(Arg * a)
     if (destDir != wd) {
       delete(destDir);
     }
-    printf("Move/Rename failed.\n");
+    printf("This cmd did not work\n");
     return;
   }
   else if (!destExists) {
@@ -1036,7 +1036,7 @@ void doMv(Arg * a)
       destDir = wd;
       wd = startDir;
       if (!success) {
-        printf("Move failed.\n");
+        printf("Move did not work.\n");
         return;
       }
     }
@@ -1044,7 +1044,7 @@ void doMv(Arg * a)
       if (destDir != wd) {
         delete(destDir);
       }
-      printf("File/Directory already exists.\n");
+      printf("Directory already exists.\n");
       return;  
     }
     uint sourceType = sourceDir->fv->inodes.getType(iNode);
