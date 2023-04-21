@@ -4,19 +4,17 @@ Dougie Townsell
 townsell.4@wright.edu
 
 
-Accomplished - I accomplished this project by working in shell.cpp directory.cpp and volume.cpp. In shell.cpp I implemented the mkdir, cd, pwd, and mv command. I also had to add some functions and ajust some functions in directory.cpp and volume.cpp. The mv command was the hardest part of the project there are may cases to account for in the method 
+Accomplished - I accomplished this project by working in shell.cpp directory.cpp and inode.cpp. In shell.cpp I implemented the hard links and softlinks. I also had to add some helper functions to support the links. Also I use those helper function in mv, cd and rm to acocunt for the link commands. In inode.cpp I adjusted the show method to account for the links and show in the link count 
+
+Indirects - by far was the hardest part of the project I did not get that all the way done I got single done but double was to hard to do. I did not have enough time to get that done. 
 
 # Design
 
-mkdir - This took one line to create the directory `wd->createFile((byte *)a[0].s, wd->nInode)` I used the wd to call the create file and pass in the argument and wd Inode number.
+`ln hardlink` - I used some helper functions to deal with the entries and deal with the path.  The functions cd, mv, cp, ls, and rm account for the hard links
 
-cd - For cd I made the wd the fv->root. Then I looked for the '/' in the path and moved directorys using wd and prev a variable I created in the function 
-
-rm - For improving rm I made a fucntion to check and see if the directory is empty. From the rm function I created a directory and called my function and passed in the counter variable and if the directory was empty  then we go head and call wd->delete file. If not then print out a message saying the directory was not deleted
-
-mv - I had to make a few functions and adjust some functions in Directory and Volume.cpp to get everything to work on move. In shell.cpp I made a helper function to complete the mv and just call it in mv. In Directory.cpp I made a renameFile function to handle the case if your just trying to rename the directory or file 
-
-inode - I just got the inode of the wd checked if was valid this displayed it 
+`ln -s`  - For symbolic link I kept the same idea I used for hard link I used some helper functions to deal with the entries and deal with the path.  The functions cd, mv, cp, ls, and rm account for the soft links
+ 
+`inode show` - I added some checks to account for the type of link and link count so it displays 
 
 `-rw------- 1 dougie dougie   2902 Apr  2  2007 bitvector.cpp
 -rw-rw-r-- 1 dougie dougie 614400 Mar  6 17:48 cmdtries.txt
@@ -28,7 +26,6 @@ inode - I just got the inode of the wd checked if was valid this displayed it
 -rw------- 1 dougie dougie   7569 Apr  2  2007 inodes.cpp
 -rw------- 1 dougie dougie    722 Jul  7  2020 Makefile
 -rw------- 1 dougie dougie   3641 Apr  2  2007 mount.cpp
--rw-rw-r-- 1 dougie dougie   2183 Mar 20 18:00 Project2answers.txt
 -rw-rw-r-- 1 dougie dougie   2983 Mar  7 00:28 README.md
 -rw------- 1 dougie dougie  17262 Mar 26 17:52 shell.cpp
 -rw------- 1 dougie dougie   3780 Apr  2  2007 simdisk.cpp
