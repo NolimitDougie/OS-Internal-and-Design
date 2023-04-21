@@ -253,7 +253,7 @@ void doLsLong(Arg *a)
   }
 }
 
-void doLsName(Arg * a)
+void doLsLink(Arg * a)
 {
   Directory* curDir;
   uint iNode = wd->iNumberOf((byte *) a[0].s);
@@ -1396,7 +1396,7 @@ public:
     {"inode", "s", "v", doInode},
     {"ls", "", "v", doLsLong},
     {"ls", "s", "v", doLsLong},
-    {"ls", "s", "v", doLsName},
+    {"ls", "s", "v", doLsLink},
     {"ls", "ss", "v", lsRecursive},
     {"lslong", "", "v", doLsLong},
     {"mkdir", "s", "v", doMkDir},
