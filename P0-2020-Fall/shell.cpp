@@ -409,13 +409,12 @@ uint getLinkType(std::string path)
 
 bool successiveCD(char *path)
 {
-  bool toRoot = false;
+  bool rootDir = false;
   bool afterRoot = true;
-  printf("abugabuga\n");
   Directory *startDir = new Directory(fv, wd->nInode, 0);
   if (path[0] == '/')
   {
-    toRoot = true;
+    rootDir = true;
     if (path[1] == 0)
     {
       afterRoot = false;
@@ -427,17 +426,17 @@ bool successiveCD(char *path)
       {
         if (path[i] != '/')
         {
-          toRoot = false;
+          rootDir = false;
           return false;
         }
         else
         {
-          toRoot = true;
+          rootDir = true;
         }
       }
     }
   }
-  if (toRoot)
+  if (rootDir)
   {
     Directory *childDir = wd;
     uint rootINode = 0;
@@ -459,7 +458,7 @@ bool successiveCD(char *path)
     const char *pathEntry;
     for (long unsigned int i = 0; i < pathVec.size(); i++)
     {
-      pathEntry = pathVec[i].c_str(); // https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
+      pathEntry = pathVec[i].c_str(); 
       iNode = wd->iNumberOf((byte *)pathEntry);
       if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory)
       {
@@ -519,12 +518,12 @@ bool successiveCD(char *path)
 
 std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, bool &exists)
 {
-  bool toRoot = false;
+  bool rootDir = false;
   bool afterRoot = true;
   Directory *startDir = new Directory(fv, wd->nInode, 0);
   if (path[0] == '/')
   {
-    toRoot = true;
+    rootDir = true;
     if (path[1] == 0)
     {
       afterRoot = false;
@@ -536,17 +535,17 @@ std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, b
       {
         if (path[i] != '/')
         {
-          toRoot = false;
+          rootDir = false;
           break;
         }
         else
         {
-          toRoot = true;
+          rootDir = true;
         }
       }
     }
   }
-  if (toRoot)
+  if (rootDir)
   {
     Directory *childDir = wd;
     uint rootINode = 0;
@@ -569,7 +568,7 @@ std::vector<std::string> doMvPath(char *path, bool &invalidPath, bool &IsFile, b
     const char *pathEntry;
     for (long unsigned int i = 0; i < pathVec.size(); i++)
     {
-      pathEntry = pathVec[i].c_str(); // https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
+      pathEntry = pathVec[i].c_str(); 
       iNode = wd->iNumberOf((byte *)pathEntry);
       if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory)
       {
@@ -755,33 +754,29 @@ void doTouch(Arg *a)
 
 void doChDir(Arg * a)
 {
-  bool toRoot;
+  bool rootDir;
   bool afterRoot = true;
   Directory* startDir = new Directory(fv, wd->nInode, 0);
   if (a[0].s[0] == '/') {
-    toRoot = true;
+    rootDir = true;
     if (a[0].s[1] == 0) {
       afterRoot = false;
-      printf("Changing directory to root.\n");
     }
     else if (a[0].s[1] == '/') {
       afterRoot = false;
       for (long unsigned int i = 0; i < strlen(a[0].s); i++) {
         if (a[0].s[i] != '/') {
-          toRoot = false;
+          rootDir = false;
           printf("Changing directory failed.\n");
           break;
         }
         else {
-          toRoot = true;
+          rootDir = true;
         }
-      }
-      if (toRoot) {
-        printf("Changing directory to root.\n");
       }
     }
   }
-  if (toRoot) {
+  if (rootDir) {
     Directory* childDir = wd;
     uint rootINode = 0;
     while (rootINode != 1) {
@@ -854,7 +849,6 @@ void doChDir(Arg * a)
   if (wd != startDir) {
     delete(startDir);
   }
-  printf("Current working directory: ");
   doPwd(a);
 }
 
@@ -903,7 +897,6 @@ void doMv(Arg * a)
 
   char* destPath = new char[strlen(a[1].s)+1]; // allocate for string and ending \0
   strcpy(destPath, a[1].s);
-  // end citation
 
   std::vector<std::string> sourceVec = doMvPath(a[0].s, sourceInvalidPath, sourceIsFile, sourceExists);
   Directory* sourceDir = new Directory(fv, wd->nInode, 0);
@@ -914,7 +907,6 @@ void doMv(Arg * a)
     if (sourceDir != wd) {
       delete(sourceDir);
     }
-    printf("Cannot move or rename root.\n");
     return;
   }
   std::vector<std::string> destVec = doMvPath(destPath, destInvalidPath, destIsFile, destExists);
@@ -1051,11 +1043,8 @@ void doHardLink(Arg *a)
   bool destIsFile = false;
   bool destExists = true;
 
-  // https://stackoverflow.com/questions/16515582/how-to-perform-a-deep-copy-of-a-char and
-  // https://stackoverflow.com/questions/481673/make-a-copy-of-a-char
   char *destPath = new char[strlen(a[1].s) + 1]; // allocate for string and ending \0
   strcpy(destPath, a[1].s);
-  // end citation
 
   std::vector<std::string> sourceVec = doMvPath(a[0].s, sourceInvalidPath, sourceIsFile, sourceExists);
   Directory *sourceDir = new Directory(fv, wd->nInode, 0);

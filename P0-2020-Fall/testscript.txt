@@ -1,34 +1,34 @@
 # stdTestScriptP2.txt
 
 mkfs D2
-mkdir dirA
-cd dirA
-mkdir dirB
-cd dirB
-mkdir dirC
+mkdir home
+cd home
+mkdir alpha
+cd alpha
+mkdir wolf
 cd /
-touch file
-ln dirA harddirA
-ln file hardfile
+touch beta
+ln home harddirA
+ln beta hardfile
 cd hardfile
 ln hardfile hard2file
 ls
-mv hard2file dirA/dirB/hard2file2
-cd dirA/dirB
+mv hard2file home/alpha/hard2file2
+cd home/alpha
 ls
 cd /
-ln dirA/dirB/hard2file2
+ln home/alpha/hard2file2
 ls
-ln -s file symfile
+ln -s beta symfile
 cd symfile
 ln -s hardfile symhardfile
 ln -s symfile sym2file
 ln symfile hardsymfile
-ln -s dirA/dirB symdir
+ln -s home/alpha symdir
 ln symdir hardsymdir
 ln -s symdir sym2dir
 ls
-mv hardsymfile /dirA/dirB
+mv hardsymfile /home/alpha
 mv symfile symdir
 mv sym2file sym2dir
 ln symdir/sym2file
@@ -60,7 +60,7 @@ touch inode8test
 inode 8
 ls
 cd ..
-rm -rf dirB
+rm -rf alpha
 cd /
 ls
 cd hardsymdir
