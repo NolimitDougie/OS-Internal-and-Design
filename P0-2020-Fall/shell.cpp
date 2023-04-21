@@ -292,7 +292,7 @@ void lsRecursive(Arg *a)
     wd->ls();
     return;
   }
-  printf("Incorrect flag for recursive ls");
+  printf("Incorrect flags for recursive ls");
 }
 
 uint findNumSlashes(char *path)
@@ -640,56 +640,56 @@ void doRm(Arg * a)
   bool tmp;
 
   std::vector<std::string> pathVec = doMvPath(a[0].s, tmp, tmp, tmp);
-  Directory* remDirParent = wd;
+  Directory* parentDir = wd;
   wd = startDir;
 
   const char* deleteEntity = pathVec[pathVec.size() - 1].c_str();
 
-  uint in = remDirParent->iNumberOf((byte *) deleteEntity);
+  uint in = parentDir->iNumberOf((byte *) deleteEntity);
 
   if (in == 0) {
     printf("File/Directory not found.\n");
-    delete(remDirParent);
+    delete(parentDir);
     return;
   }
   uint numContents = 0;
-  if (remDirParent->fv->inodes.getType(in) == iTypeDirectory) {
+  if (parentDir->fv->inodes.getType(in) == iTypeDirectory) {
     numContents = wd->lsInt(in);
   }
-  if (remDirParent->fv->inodes.getType(in) == iTypeDirectory && numContents == 0) {
-    in = remDirParent->deleteFile((byte *) deleteEntity, 1);
+  if (parentDir->fv->inodes.getType(in) == iTypeDirectory && numContents == 0) {
+    in = parentDir->deleteFile((byte *) deleteEntity, 1);
     printf("Successfully removed directory '%s' with inode %d and %d entries.\n", deleteEntity, in, numContents);
   }
-  else if (remDirParent->fv->inodes.getType(in) == iTypeDirectory && numContents != 0) {
+  else if (parentDir->fv->inodes.getType(in) == iTypeDirectory && numContents != 0) {
     printf("Unable to remove directory '%s' with inode %d and %d entries.\n", deleteEntity, in, numContents);
   }
-  else if (remDirParent->fv->inodes.getType(in) == iTypeOrdinary) {
+  else if (parentDir->fv->inodes.getType(in) == iTypeOrdinary) {
     int numLinks = fv->inodes.getLinkCount(in);
-    int flag;
+    int flags;
     if (numLinks == 0) {
-      flag = 1;
+      flags = 1;
     }
     else if (numLinks > 0) {
-      flag = 0;
+      flags = 0;
     }
-    in = remDirParent->deleteFile((byte *) deleteEntity, flag);
+    in = parentDir->deleteFile((byte *) deleteEntity, flags);
     fv->inodes.incLinkCount(in, -1);
     printf("Successfully removed file '%s' with inode %d.\n", deleteEntity, in);
   }
-  else if (remDirParent->fv->inodes.getType(in) == iTypeSoftLink) {
+  else if (parentDir->fv->inodes.getType(in) == iTypeSoftLink) {
     int numLinks = fv->inodes.getLinkCount(in);
-    int flag;
+    int flags;
     if (numLinks == 0) {
-      flag = 1;
+      flags = 1;
     }
     else if (numLinks > 0) {
-      flag = 0;
+      flags = 0;
     }
-    in = remDirParent->deleteFile((byte *) deleteEntity, flag);
+    in = parentDir->deleteFile((byte *) deleteEntity, flags);
     fv->inodes.incLinkCount(in, -1);
     printf("Successfully removed symbolic link '%s' with inode %d.\n", deleteEntity, in);
   }
-  delete(remDirParent);
+  delete(parentDir);
 }
 
 void dorecursiveHelper(Directory *tmp)
@@ -732,7 +732,7 @@ void dorecursiveRm(Arg *a)
     wd->deleteFile((byte *)a[1].s, 1);
     return;
   }
-  printf("Incorrect flag for recursive rm.\n");
+  printf("Incorrect flags for recursive rm.\n");
 }
 
 void doInode(Arg *a)
@@ -953,31 +953,31 @@ void doMv(Arg * a)
     return;
   }
   else if (!destExists) {
-    uint flag;
+    uint flags;
     const char* sourceFile = sourceVec[sourceVec.size() - 1].c_str();
     const char* destName = destVec[destVec.size() - 1].c_str();
     uint iNode = sourceDir->iNumberOf((byte *) sourceFile);
     uint sourceType = sourceDir->fv->inodes.getType(iNode);
     if (sourceIsFile || sourceType == iTypeSoftLink) {
-      flag = 0;
+      flags = 0;
     }
     else {
-      flag = 1;
+      flags = 1;
       if (fileInPath(destVec, iNode)) {
         printf("Cannot move a directory into its own subdirectory.\n");
         return;
       }
     }
     sourceDir->deleteFile((byte *) sourceFile, 0);
-    destDir->customCreateFile((byte *) destName, iNode, flag);
+    destDir->customCreateFile((byte *) destName, iNode, flags);
     if (sourceType == iTypeSoftLink) {
       destDir->fv->inodes.setType(iNode, iTypeSoftLink);
     }
-    if (flag == 1) {
+    if (flags == 1) {
       Directory* newDir = new Directory(fv, iNode, 0);
       newDir->customDeleteFile((byte *) "..", 0);
       uint destINode = destDir->iNumberOf((byte *) ".");
-      newDir->customCreateFile((byte *) "..", destINode, flag);
+      newDir->customCreateFile((byte *) "..", destINode, flags);
       if (newDir != wd) {
         delete(newDir);
       }
@@ -985,7 +985,7 @@ void doMv(Arg * a)
     printf("Renamed successfully.\n");
   }
   else if (destExists) {
-    uint flag;
+    uint flags;
     const char* sourceFile = sourceVec[sourceVec.size() - 1].c_str();
     const char* destName = destVec[destVec.size() - 1].c_str();
     uint iNode = sourceDir->iNumberOf((byte *) sourceFile);
@@ -1022,10 +1022,10 @@ void doMv(Arg * a)
     }
     uint sourceType = sourceDir->fv->inodes.getType(iNode);
     if (sourceIsFile || sourceType == iTypeSoftLink) {
-      flag = 0;
+      flags = 0;
     }
     else {
-      flag = 1;
+      flags = 1;
       if (fileInPath(destVec, iNode)) {
         if (destDir != wd) {
           delete(destDir);
@@ -1035,14 +1035,14 @@ void doMv(Arg * a)
       }
     }
     sourceDir->deleteFile((byte *) sourceFile, 0);
-    destDir->customCreateFile((byte *) sourceFile, iNode, flag);
+    destDir->customCreateFile((byte *) sourceFile, iNode, flags);
     if (sourceType == iTypeSoftLink) {
       destDir->fv->inodes.setType(iNode, iTypeSoftLink);
     }
-    if (flag == 1) {
+    if (flags == 1) {
       Directory* newDir = new Directory(fv, iNode, 0);
       newDir->customDeleteFile((byte *) "..", 0);
-      newDir->customCreateFile((byte *) "..", destINode, flag);
+      newDir->customCreateFile((byte *) "..", destINode, flags);
       if (newDir != wd) {
         delete(newDir);
       }
@@ -1196,7 +1196,7 @@ void doSoftLink(Arg *a)
 {
   if (strcmp(a[0].s, "-s") != 0)
   {
-    printf("Incorrect flag for symbolic link creation.\n");
+    printf("Incorrect flags for symbolic link creation.\n");
   }
   Directory *startDir = new Directory(fv, wd->nInode, 0);
   bool sourceInvalidPath = false;
