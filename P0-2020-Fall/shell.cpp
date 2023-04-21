@@ -253,6 +253,33 @@ void doLsLong(Arg *a)
   }
 }
 
+void doLsName(Arg * a)
+{
+  Directory* curDir;
+  uint iNode = wd->iNumberOf((byte *) a[0].s);
+  if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeDirectory) {
+    curDir = wd;
+    wd = new Directory(fv, iNode, 0);
+    doLsLong(a);
+    delete(wd);
+    wd = curDir;
+  }
+  else if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeOrdinary) {
+    printf("%7d %crw-rw-rw-    1 yourName yourGroup %7d Jul 15 12:34 %s\n",
+	     iNode, '-', wd->fv->inodes.getFileSize(iNode), a[0].s);
+  }
+  else if (iNode != 0 && wd->fv->inodes.getType(iNode) == iTypeSoftLink) {
+    uint bn = fv->inodes.getBlockNumber(iNode, 0);
+    byte *blockData = new byte[fv->superBlock.nBytesPerBlock];
+    fv->readBlock(bn, blockData);
+    if (blockData[1] == '.') {
+      blockData+=2;
+    }
+    printf("%7d %crw-rw-rw-    1 yourName yourGroup %7d Jul 15 12:34 %s -> %s\n",
+	     iNode, 'l', wd->fv->inodes.getFileSize(iNode), a[0].s, (char *) blockData);
+  }
+}
+
 void lsRecursiveHelper(Directory *tmp)
 {
 
@@ -1369,6 +1396,7 @@ public:
     {"inode", "s", "v", doInode},
     {"ls", "", "v", doLsLong},
     {"ls", "s", "v", doLsLong},
+    {"ls", "s", "v", doLsName},
     {"ls", "ss", "v", lsRecursive},
     {"lslong", "", "v", doLsLong},
     {"mkdir", "s", "v", doMkDir},
